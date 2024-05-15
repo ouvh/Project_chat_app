@@ -1,30 +1,49 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div class="container">
+    <chat />
+    <list />
+    <detail />
+
+    
+
+  </div>
 </template>
+
+
+<script>
+import chat from "./components/chat.vue"
+import list from "./components/list.vue"
+import detail from "./components/list.vue"
+
+
+export default {
+  components:{chat,list,detail}
+  
+}
+</script>
+
+
+
+
+
 
 <style>
 #app {
+  color: white;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
 }
 
-nav {
-  padding: 30px;
+.container{
+  display: flex;
+  width: 90vw;
+  height: 90vh;
+  background-color: rgba(17, 25, 40, 0.75);
+  border-radius: 12px;
+  backdrop-filter: blur(19px) saturate(180%);
+  border: 1px solid rgba(255. 255. 255. 0.125);;
 }
 
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
 
-nav a.router-link-exact-active {
-  color: #42b983;
-}
 </style>
