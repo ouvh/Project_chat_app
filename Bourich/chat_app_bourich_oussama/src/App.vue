@@ -44,6 +44,7 @@ export default {
   border-radius: 12px;
   backdrop-filter: blur(19px) saturate(180%);
   border: 1px solid rgba(255. 255. 255. 0.125);;
+  overflow:auto
 }
 
 

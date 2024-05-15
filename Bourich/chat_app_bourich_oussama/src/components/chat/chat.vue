@@ -173,10 +173,33 @@ gap : 20px
   gap : 20px
 }
 
+.center .message img{
+
+  width : 30px;
+  height: 30px;
+  border-radius : 50%;
+  object-fit : cover ;
+  margin-top : 20px
+
+}
+.texts{
+  flex : 1;
+  display : flex; 
+  flex-direction: column ;
+  gap : 5px;
+}
 .message_own{
   align-self:flex-end; 
 }
+.message_own p{
+  background-color: #5183fe;
+  padding : 5px
+}
 
+.message p{
+  padding : 10px;
+  background-color : rgba(17,25,40,0.3)
+}
 
 .bottom{
 
