@@ -16,8 +16,15 @@ export default {
 </script>
 
 <style scoped>
+
+
 .list{
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
+
+
+
 
 </style>
