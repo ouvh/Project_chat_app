@@ -1,7 +1,8 @@
 <template>
   <div class="container">
-    <chat />
     <list />
+
+    <chat />
     <detail />
 
     
@@ -11,9 +12,9 @@
 
 
 <script>
-import chat from "./components/chat.vue"
-import list from "./components/list.vue"
-import detail from "./components/list.vue"
+import chat from "./components/chat/chat.vue"
+import list from "./components/list/list.vue"
+import detail from "./components/detail/detail.vue"
 
 
 export default {

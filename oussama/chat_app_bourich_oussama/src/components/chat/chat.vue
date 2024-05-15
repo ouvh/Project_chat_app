@@ -1,6 +1,5 @@
 <template>
-    <div class="detail"></div>
-
+  <div class="chat">CHAT</div>
 </template>
 
 <script>
@@ -9,6 +8,9 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.chat{
+    flex: 2;
+}
 
 </style>
