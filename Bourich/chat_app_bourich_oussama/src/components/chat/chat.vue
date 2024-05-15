@@ -23,6 +23,35 @@
           
     </div>
     <div class="center">
+      <div class="message">
+
+        <img src="../../../public/assets/avatar.png" alt="">
+        <div class="text">
+          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
+        </div>
+      </div>
+      <div class="message_own">
+
+        <div class="text">
+          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
+        </div>
+      </div>
+
+
+      <div class="message">
+
+<img src="../../../public/assets/avatar.png" alt="">
+<div class="text">
+  <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
+</div>
+      </div>
+
+      <div class="message_own">
+
+      <div class="text">
+        <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
+      </div>
+      </div>
 
 
     </div>
@@ -76,6 +105,8 @@ export default {
     border-left:1px solid #dddddd35;
     border-right : 1px solid #dddddd35;
     height: 100%;
+    display : flex;
+    flex-direction : column;
 }
 .chat .top{
 padding: 20px;
@@ -117,20 +148,36 @@ p{
 .icons{
   display : flex ; 
   gap : 20px;
-  
+   
 }
-
-img{
+.icons img{ width: 20px;
+  height: 20px;
+  cursor : pointer}
+.bottom img{
   width: 20px;
   height: 20px;
   cursor : pointer
   }
 
 .center{
-
-
-
+padding : 20px;
+flex : 1;
+overflow : scroll();
+display: flex;
+flex-direction : column ;
+gap : 20px
 }
+.center .message{
+  max-width : 70%;
+  display : flex;
+  gap : 20px
+}
+
+.message_own{
+  align-self:flex-end; 
+}
+
+
 .bottom{
 
   padding:20px;
