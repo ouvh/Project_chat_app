@@ -12,15 +12,20 @@
   align-items:center ;">
 
           <div class="app-introduction animated-flex d-xl-none ">
-    <h2 style="color: rgba(151, 151, 204, 0.342); font-weight: bold;">Welcome to ChatFlow!</h2><br>
+    <h2 style="color: rgba(255, 255, 233, 0.9); font-weight: bold;">Welcome to ChatFlow!</h2><br>
 
     
   </div>
         </div>
         
 
-        <Register/>
+        <LoginForm/>
       </b-col>
+
+
+
+
+      
     </b-row>
 
 
@@ -29,10 +34,9 @@
 
 <script>
 import LoginForm from "@/components/auth/loginForm.vue"
-import Register from '@/components/auth/registerform.vue'
 import intro from "@/components/layout/intro.vue"
 export default {
-    components:{LoginForm,intro,Register}
+    components:{LoginForm,intro}
     
 }
 </script>

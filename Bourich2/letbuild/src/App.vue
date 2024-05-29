@@ -1,6 +1,6 @@
 <template>
   <b-container fluid class="container">
-    <LoginPage/>
+    <RegisterPage/>
   </b-container>
 </template>
 
@@ -12,11 +12,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import Home from "@/views/Home.vue"
 import LoginPage from "@/views/LoginPage.vue"
+import RegisterPage from './views/RegisterPage.vue';
 
 
 
 export default {
-  components:{Home,LoginPage}
+  components:{Home,LoginPage,RegisterPage}
  
 };
 
