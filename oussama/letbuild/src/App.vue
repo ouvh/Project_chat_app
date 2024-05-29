@@ -13,10 +13,11 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Home from "@/views/Home.vue"
 import LoginPage from "@/views/LoginPage.vue"
 import RegisterPage from './views/RegisterPage.vue';
+import Chat from "@/views/Chat.vue"
 
 
 export default {
-  components:{Home,LoginPage,RegisterPage}
+  components:{Home,LoginPage,RegisterPage,Chat}
  
 };
 

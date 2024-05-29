@@ -1,16 +1,16 @@
 <template>
     <div class="login-container">
       <b-form class="login-card" @submit.prevent="register">
-        <b-form-group label="Username" label-for="username-input">
+        <b-form-group label="Username" label-for="username-input" class="w-100">
           <b-form-input id="username-input" v-model="username" type="text" required placeholder="Choose a username"></b-form-input>
         </b-form-group>
-        <b-form-group label="Email" label-for="email-input">
-          <b-form-input id="email-input" v-model="email" type="email" required placeholder="Enter your email"></b-form-input>
+        <b-form-group label="Email" label-for="email-input" class="w-100">
+          <b-form-input id="email-input" v-model="email" type="email" class="w-100" required placeholder="Enter your email" ></b-form-input>
         </b-form-group>
-        <b-form-group label="Password" label-for="password-input">
+        <b-form-group label="Password" label-for="password-input" class="w-100">
           <b-form-input id="password-input" v-model="password" type="password" required placeholder="Create a password"></b-form-input>
         </b-form-group>
-        <b-form-group label="Confirm Password" label-for="confirm-password-input">
+        <b-form-group label="Confirm Password" label-for="confirm-password-input" class="w-100">
           <b-form-input id="confirm-password-input" v-model="confirmPassword" type="password" required placeholder="Confirm your password"></b-form-input>
         </b-form-group>
         <b-button type="submit" variant="success" class="ooopp w-100 mb-2">Register</b-button>
@@ -90,6 +90,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh; /* Full viewport height */
+    width: 100%;
   
   }
   

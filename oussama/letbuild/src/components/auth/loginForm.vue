@@ -2,11 +2,11 @@
   <div class="login-container">
 
     <b-form class="login-card" @submit.prevent="login">
-      <b-form-group label="Email" label-for="email-input">
+      <b-form-group label="Email" label-for="email-input" class="w-100">
         
         <b-form-input id="email-input" v-model="email" type="email" required placeholder="Enter your email"></b-form-input>
       </b-form-group>
-      <b-form-group label="Password" label-for="password-input">
+      <b-form-group label="Password" label-for="password-input" class="w-100">
         <b-form-input id="password-input" v-model="password" type="password" required placeholder="Enter your password"></b-form-input>
       </b-form-group>
       <b-button type="submit" variant="success" class="ooopp w-100 mb-2">Login</b-button>
