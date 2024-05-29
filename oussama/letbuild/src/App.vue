@@ -1,6 +1,6 @@
 <template>
   <b-container fluid class="container">
-    <Chat/>
+    <RegisterPage/>
   </b-container>
 </template>
 
