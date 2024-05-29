@@ -22,7 +22,7 @@ export default {
 
 </script>
 
-<style >
+<style>
 
 .ooo {
   transition: width 0.5s ease-in-out;
