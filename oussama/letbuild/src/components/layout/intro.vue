@@ -1,9 +1,14 @@
 <template>
-  <div class="app-introduction">
-    <h2>Welcome to ChatApp!</h2>
-    <p>ChatApp is a real-time messaging platform where you can connect with your friends and family. Enjoy seamless communication with our user-friendly interface.</p>
+  <div class="container1">
+
+    <div class="app-introduction">
     <img src="@/assets/intro.jpg" alt="Chat Icon" class="chat-icon">
+    <h2>Welcome to ChatFlow!</h2>
+    <p>ChatApp is a real-time messaging platform where you can connect with your friends and family. Enjoy seamless communication with our user-friendly interface.</p>
+    
   </div>
+  </div>
+  
 </template>
 
 <script>
@@ -13,28 +18,41 @@ export default {
 </script>
 
 <style scoped>
+
+
+.container1{
+  height: 100%; /* Ensures the full height of the viewport */
+  margin: 0; /* Removes default margin */
+  display: flex; /* Establishes a flex container */
+  justify-content: center; /* Centers children horizontally in the flex container */
+  align-items: center; /* Centers children vertically in the flex container */
+  background: none;
+}
+
 .app-introduction {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 300px; /* Adjust based on your layout */
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
+  color: #ffffff;
+  text-align: center; /* Centers the text inside the introduction div */
 }
 
 .app-introduction h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 26px;
+  margin-bottom: 15px;
 }
 
 .app-introduction p {
-  font-size: 16px;
-  color: #555;
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .chat-icon {
-  width: 50px;
-  height: 50px;
-  margin-top: 10px;
+  width: 70%;
+  margin-top: 15px;
+  filter: drop-shadow(2px 4px 6px black);
+  margin-bottom: 30px;
 }
 </style>
+
