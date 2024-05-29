@@ -20,8 +20,10 @@
       <div class="message">
         <img src="../../../public/assets/avatar.png" alt="">
         <div class="text">
+                    <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
+
           <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                               <span class="time">10min ago</span>
+          <span class="time">10min ago</span>
 
         </div>
       </div>
@@ -116,6 +118,7 @@
         </div>
       </div>
     
+    <div ref="targetscroll"></div>
 
 
     </div>
@@ -177,6 +180,17 @@ export default {
     };
   },
   mounted() {
+    const targetElement = this.$refs.targetscroll;
+
+      // Check if the element exists
+      if (targetElement) {
+        // Scroll to the element
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+      }
+
+
+
+
     this.picker.on('emoji', emoji => {
       this.text += emoji.emoji;
     });
@@ -327,6 +341,14 @@ transition: background-color 0.1s ease; /* Smooth transition */
   border-radius: 5px;
   color: white;
   margin-bottom:0 ;
+}
+
+.text img{
+  width: 100%;
+  height: 300px;
+  border-radius: 10px;
+  object-fit: cover;
+
 }
 
 .time{
