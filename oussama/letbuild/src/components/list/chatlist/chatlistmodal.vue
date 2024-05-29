@@ -37,7 +37,7 @@
 export default {
     data(){
         return{
-            addMode:false,
+            addMode:true,
             first:require("../../../../public/assets/minus.png"),
             second:require("../../../../public/assets/plus.png")
         }
