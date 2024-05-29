@@ -11,10 +11,7 @@
        
       <b-row style="display:flex;flex-direction:column">
         
-      
-      <b-col v-b-tooltip.hover title="Show contact details and shared files" id="image" style="cursor:pointer;flex-grow:0;margin-right:15px;margin-left:20px;margin-top:20px">
-            <i @click="showDetail = true" class="bi bi-image" style=" font-size: 1.8rem;"></i>
-      </b-col>
+    
       <b-col v-b-tooltip.hover title="show contacts list" style="cursor:pointer;margin-right:15px;margin-left:20px;margin-top:20px">
             <i @click="showList = true"  class="bi bi-chat-fill" style=" font-size: 1.8rem;"></i>
       </b-col>
@@ -30,7 +27,7 @@
         <list />
       </b-col>
       <b-col cols="12" xl="9" class="ooo">    
-        <chat />
+        <WelcomePage />
       </b-col>
      
     </b-row>
@@ -51,33 +48,18 @@
       <listmodal />
     </b-modal>
 
-    <!-- Sliding Detail Modal -->
-    <b-modal
-      id="detail-modal"
-      size="lg"
-      hide-footer
-      v-model="showDetail"
-      @hidden="resetModal"
-      centered
-      class="slide-in"
-    >
-      <template #modal-title>
-        Detail
-      </template>
-      <detail />
-    </b-modal>
- 
+   
   
 </template>
 
 <script>
-import chat from "../components/chat/chat.vue";
 import list from "../components/list/list.vue";
 import detail from "../components/detail/detail.vue";
 import listmodal from "../components/modals/listmodal.vue"
+import WelcomePage from "@/components/layout/welcomePage.vue"
 
 export default {
-    components: { chat, list, detail ,listmodal },
+    components: { list, detail ,listmodal,WelcomePage },
   data() {
     return {
       showList: false,
