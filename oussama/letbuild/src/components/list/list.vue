@@ -1,5 +1,5 @@
 <template>
-  <div class="list d-flex flex-column flex-grow-1">
+  <div class="d-flex flex-column h-100">
     <userinfo />
     <chatlist />
   </div>
@@ -16,6 +16,7 @@ export default {
 
 <style scoped>
 .list {
+  width: 100%;
   display: flex;
   flex-direction: column;
   height: 100%;

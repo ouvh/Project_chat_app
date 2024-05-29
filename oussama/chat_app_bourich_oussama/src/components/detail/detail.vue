@@ -45,7 +45,7 @@
                         </div>
 
                         
-                        <img src="../../../public/assets/download.png" alt="">
+                        <img class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
                     
@@ -58,7 +58,7 @@
                         </div>
 
                         
-                        <img src="../../../public/assets/download.png" alt="">
+                        <img class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
 
@@ -72,7 +72,7 @@
                         </div>
 
                         
-                        <img src="../../../public/assets/download.png" alt="">
+                        <img class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
 
@@ -86,7 +86,7 @@
                         </div>
 
                         
-                        <img src="../../../public/assets/download.png" alt="">
+                        <img class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
 
@@ -100,7 +100,7 @@
                         </div>
 
                         
-                        <img src="../../../public/assets/download.png" alt="">
+                        <img class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
 
@@ -173,6 +173,7 @@ export default {
     width: 100px;
     height: 100px;
     border-radius:50% ;
+    object-fit: cover;
 }
 
 .info{
@@ -183,14 +184,71 @@ export default {
 }
 
 .option{
+
+
     
 }
 
 .title{
     display: flex;
     align-items: center;
-    justify-content: ;
+    justify-content: space-between;
     
+}
+
+.title img{
+    width: 30px;
+    height: 30px;
+    background-color: rgba(17, 25, 40, 0.3);
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.photos{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+}
+
+.photoitem{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+
+}
+
+.photodetail{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+}
+
+.photodetail img{
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    object-fit: cover;
+    
+}
+.photodetail span{
+    font-size: 14px;
+    color: lightgray;
+    font-weight: 300;
+    
+}
+
+.icon{
+    width: 30px;
+    height: 30px;
+    padding: 10px;
+    background-color:rgba(17, 25, 40, 0.3) ;
+    border-radius: 10%;
+    cursor: pointer;
+
 }
 
 </style>
