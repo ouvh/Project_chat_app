@@ -13,12 +13,16 @@
             <img src="../../../../public/assets/search.png" alt="Search Icon" class="search-icon">
 
     </div>
-    <img 
-      @click="addMode = !addMode" 
-      :src="addMode ? first : second" 
-      alt="Add Icon" 
-      class="add-icon"
-    >
+
+    <div class="oooooooooo" @click="addMode = !addMode"          v-b-tooltip.hover title="Add new user or create new group">
+      <img
+        @click="addMode = !addMode"
+        :src="second"
+        alt="Add Icon"
+        class="add-icon"
+         v-b-tooltip.hover title="Add new user or create new group"
+      >
+    </div>
   </div>
 
     <div class="item">
@@ -48,6 +52,15 @@ export default {
 </script>
 
 <style scoped>
+.oooooooooo{
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: green;
+  padding: 10px;
+  border-radius: 7px;
+}
 
 .search {
   gap: 20px;
@@ -91,7 +104,6 @@ export default {
 .add-icon {
   width: 20px;
   height: 20px;
-  margin-right: 10px;
   cursor: pointer;
 }
 

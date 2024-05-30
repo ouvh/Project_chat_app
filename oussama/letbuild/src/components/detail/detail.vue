@@ -1,39 +1,37 @@
 <template>
 
-
-
     <div class="detail">
-        <div class="user">
+        <div class="user" style="overflow:hidden">
 
             <img src="../../../public/assets/avatar.png" alt="">
             <h2>Jane Doe</h2>
-            <p>Lorem ipsum dolor sit amet.</p>
+            <p>Lorem ip neoifnwoinoinoinoinoinoinoinsumneoifnwoinoinoinoin dolor sit amet.</p>
         </div>
 
 
         <div class="info">
 
                         
-            <div>
+            <div v-if="false">
                 
-                                <b-row class="row" >
-                                    <b-col lg="10" cols="9">
-                
-                                        <h5>Chat Settings</h5>
-                                    </b-col>
-                
-                                    <b-col lg="2" cols="3"  >
-                                        <b-navbar toggleable="0%" type="white" style="">
-                                            <b-navbar-toggle target="detail-settings">
-                                                <template #default="{ expanded }">
-                                                    <i v-if="expanded"  class="bi bi-chevron-bar-up" style="color:black; font-size: 1.8rem;"></i>
-                                                    <i v-if="!expanded" class="bi bi-chevron-bar-down" style="color:black; font-size: 1.8rem;"></i>
-                                                </template>
-                                            </b-navbar-toggle>
-                                        </b-navbar>
-                                    </b-col>
-                
-                                </b-row>
+                    <b-row class="row" >
+                        <b-col lg="10" cols="9">
+    
+                            <h5>Chat Settings</h5>
+                        </b-col>
+    
+                        <b-col lg="2" cols="3"  >
+                            <b-navbar toggleable="0%" type="white" style="">
+                                <b-navbar-toggle target="detail-settings">
+                                    <template #default="{ expanded }">
+                                        <i v-if="expanded"  class="bi bi-chevron-bar-up" style="color:black; font-size: 1.8rem;"></i>
+                                        <i v-if="!expanded" class="bi bi-chevron-bar-down" style="color:black; font-size: 1.8rem;"></i>
+                                    </template>
+                                </b-navbar-toggle>
+                            </b-navbar>
+                        </b-col>
+    
+                    </b-row>
                 
                 
                                 <b-collapse id="detail-settings" is-nav class="items">
@@ -47,7 +45,7 @@
 
 
                     
-            <div>
+            <div v-if="false">
                 
                                 <b-row class="row" >
                                     <b-col lg="10" cols="9">
@@ -110,7 +108,7 @@
 
                         <div class="photodetail">
                             <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2024_2.png</span>
+                            <span>photo_2iwefoimwefoimweofmweofimweofimweofimwefimeofimweofimwefimeofimweofimwefimeofimweofimwefimeofimweofimwefimweofmweofmweofimweofimomoiwmefoiwme024_2.png</span>
 
                         </div>
 
@@ -209,12 +207,19 @@
                                 </b-row>
                 
                 
-                                <b-collapse id="detail-files" is-nav class="items">
-                                    <b-navbar-nav  class="navbar">
-                                    <b-nav-item  class="items"  to="/">Home</b-nav-item>
-                                    <b-nav-item class="items"  to="/settings">Profile</b-nav-item>
-                                    <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px"   to="/settings">Logout</b-nav-item>
-                                    </b-navbar-nav>
+                                <b-collapse id="detail-files" is-nav class="items ">
+                                    
+                                    <div class="photos">
+                                        <div class="photoitem">
+                                            <div class="photodetail">
+                                                <img src="../../assets/file.png" alt="">
+                                                <span>photo_2iwefoimiwme024_2.png</span>
+                                            </div>
+                                        
+                                            <img class="icon" src="../../../public/assets/download.png" alt="">
+                                        </div>
+                                    </div>
+                                    
                                 </b-collapse>
             </div>
 
@@ -223,15 +228,8 @@
 
 
 
-
-
-
-
-
         </div>
     </div>
-
-
 
 </template>
 

@@ -26,7 +26,10 @@
               <b-form-input id="username-input" v-model="username" type="text" required placeholder="Choose a username"></b-form-input>
             </b-form-group>
             <b-form-group label="Email" label-for="email-input" class="w-100">
-              <b-form-input id="email-input" v-model="email" type="email" class="w-100" required placeholder="Enter your email" ></b-form-input>
+              <b-form-input disabled id="email-input" v-model="email" type="email" class="w-100" required placeholder="Enter your email" ></b-form-input>
+            </b-form-group>
+             <b-form-group label="Description" label-for="desc-input" class="w-100">
+              <textarea style="border-radius:7px" id="desc-input" v-model="description" type="email" class="w-100" required placeholder="Description" ></textarea>
             </b-form-group>
             
             <b-button type="submit" variant="success" class="ooopp w-100 mb-2">Save Changes</b-button>
@@ -46,6 +49,7 @@
     data() {
       return {
         username: '',
+        description:'',
         email: '',
         password: '',
         confirmPassword: '',

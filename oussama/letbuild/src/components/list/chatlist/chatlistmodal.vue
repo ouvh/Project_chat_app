@@ -14,8 +14,8 @@
 
     </div>
     
-    <i v-if="addMode" @click="addMode = !addMode"   class="bi bi-plus " style="color:black; font-size: 2rem;cursor:pointer"></i>
-    <i v-if="!addMode" @click="addMode = !addMode"   class="bi bi-dash " style="color:black; font-size: 2rem;cursor:pointer"></i>
+    <div          v-b-tooltip.hover title="Add new user or create new group"
+ ><i   @click="addMode = !addMode"  class="bi bi-plus kmkmk" style="color:white; font-size: 2rem;cursor:pointer"></i></div>
 
 
   </div>
@@ -47,6 +47,13 @@ export default {
 </script>
 
 <style scoped>
+.kmkmk{
+  background-color:green ;
+  padding-right: 5px;
+  padding-left:5px ;
+  color: white;
+  border-radius: 7px;
+}
 
 .search {
   gap: 20px;
