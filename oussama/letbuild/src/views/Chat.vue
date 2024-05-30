@@ -1,6 +1,6 @@
 <template>
 
-    <b-row class="d-xl-none mb-3">
+    <b-row v-if="doneloading" class="d-xl-none mb-3">
       
       
 
@@ -25,15 +25,19 @@
     </b-row>
 
 
-    <b-row style="height: 90vh;width:100%">
+    <b-row v-if="doneloading" style="height: 90vh;width:100%">
       <b-col cols="3" class="animated-flex d-none d-xl-block"> 
         <list />
       </b-col>
       <b-col cols="12" xl="9" class="ooo">    
-        <chat />
+        <chat/>
+
       </b-col>
      
     </b-row>
+
+    <loadingPage v-if="!doneloading" :progress="progr"/>
+
 
     <!-- Sliding List Modal -->
     <b-modal
@@ -75,14 +79,18 @@ import chat from "../components/chat/chat.vue";
 import list from "../components/list/list.vue";
 import listmodal from "../components/modals/listmodal.vue"
 import detail from "@/components/detail/detail.vue"
+import loadingPage from '@/components/layout/loadingPage.vue';
+
 
 
 export default {
-    components: { chat, list, detail ,listmodal },
+    components: { chat, list, detail ,listmodal,loadingPage},
   data() {
     return {
       showList: false,
-      showDetail: false
+      showDetail: false,
+      doneloading:true,
+      progr:0
     };
   },
   computed: {
@@ -90,7 +98,7 @@ export default {
       return window.innerWidth >= 768;
     }
   },
-  mounted() {
+  async mounted() {
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy() {
