@@ -1,16 +1,79 @@
 <template>
   <div class="chat">
-    
- 
-    <div class="center">
-                <i class="bi bi-chat" style=" cursor:pointer;font-size: 9rem;"></i>
-
-        <h1>Welcome to chatFlow</h1>
-        <h5>Start you first discussion. No friend, no worries, add as many as you want</h5>
-    </div>
 
    
+    <div class="search">
+    <div class="searchbar">
+      <b-form-input
+      style="w-100"
+        v-model="searchQuery"
+        type="search"
+        placeholder="Search"
+        class="search-input"
+        @input="performSearch"
+      ></b-form-input>
+
+
+    </div>
+        <i v-if="!expanded"  class="bi bi-search" style="color:white; font-size: 1.8rem;"></i>
+
   </div>
+
+   <div class="iiiiiiiii">
+
+
+    <div v-if="empty" class="item">
+        <img src="@/assets/avatar.png" alt="">
+        <div class="texts" style="overflow:hidden">
+            <span style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Jane Doe</span>
+            <p  style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Hello</p>
+        </div>
+<div style="flex:1;display:flex;justify-content:end;align-items:space-between;gap:50px">
+  
+            <b-button  variant="success"  >
+                <i class="bi bi-check-lg" style="border-radius:;color:white; font-size: 2rem;"></i>
+            </b-button>
+             <b-button  variant="danger"  >
+                <i   class="bi bi-x-lg" style="color:white; font-size: 1.8rem;"></i>
+            </b-button>
+</div>
+
+
+    </div>
+
+
+
+    <div class="ooll" v-if="!empty">
+      <h3 style=" margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 1);">No Invitations Received</h3>
+
+    </div>
+
+     
+     
+
+    
+
+    
+
+
+
+
+
+    
+  </div>
+
+ 
+  </div>
+
+ 
+
+   
+  
+
+   
 
   
     <!-- Sliding Detail Modal -->
@@ -42,7 +105,8 @@ export default {
   data() {
     return {
       text: "",
-      showDetail: false
+      showDetail: false,
+      empty:false
 
     };
   },
@@ -52,9 +116,14 @@ export default {
 
 <style scoped>
 
+.iiiiiiiii{
+  background-color: rgba(29, 43, 69, 0.666);
 
+  flex: 1;
+  overflow-y: scroll;
+  margin-bottom: 5px;
 
-
+}
 
 
 .chat {
@@ -66,6 +135,18 @@ export default {
   border-right: 1px solid #dddddd35;
 }
 
+.ooll{
+  gap: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 
 .search {
   gap: 20px;
@@ -73,8 +154,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 600px;
-  margin: 20px auto;
+  margin: 10px;
   padding: 10px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -134,7 +214,7 @@ transition: background-color 0.1s ease; /* Smooth transition */
    
 }
 
-.chatlist:hover::-webkit-scrollbar-thumb {
+.iiiiiiiii:hover::-webkit-scrollbar-thumb {
   background-color: #888; /* Adjust as needed */
 
 }
@@ -168,7 +248,6 @@ transition: background-color 0.1s ease; /* Smooth transition */
     align-items: center;
     gap: 20px;
     padding: 20px;
-    cursor: pointer;
     border-bottom: 1px solid #dddddd35;
 
 }

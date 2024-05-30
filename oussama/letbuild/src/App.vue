@@ -1,6 +1,6 @@
 <template>
   <b-container fluid class="container">
-    <RegisterPage/>
+    <AddnewCreateGroup/>
   </b-container>
 </template>
 
@@ -14,10 +14,12 @@ import Home from "@/views/Home.vue"
 import LoginPage from "@/views/LoginPage.vue"
 import RegisterPage from './views/RegisterPage.vue';
 import Chat from "@/views/Chat.vue"
+import Invitations from './views/Invitations.vue';
+import AddnewCreateGroup from './views/AddnewCreateGroup.vue';
 
 
 export default {
-  components:{Home,LoginPage,RegisterPage,Chat}
+  components:{Home,LoginPage,RegisterPage,Chat,Invitations,AddnewCreateGroup}
  
 };
 
