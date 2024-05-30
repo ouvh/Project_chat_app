@@ -22,12 +22,12 @@
     </b-row>
 
 
-    <b-row style="height: 90vh;width:100%">
+    <b-row class="oiwvoiwnev" style="height: 90vh;width:100%;overflow-y: scroll; border-left: 1px solid #dddddd35;border-right: 1px solid #dddddd35;">
       <b-col cols="3" class="animated-flex d-none d-xl-block"> 
         <list />
       </b-col>
-      <b-col cols="12" xl="9" class="ooo">    
-        <welcomePage/>
+      <b-col cols="12" xl="9"  >    
+        <EditForm/>
       </b-col>
      
     </b-row>
@@ -56,10 +56,10 @@ import chat from "../components/chat/chat.vue";
 import list from "../components/list/list.vue";
 import detail from "../components/detail/detail.vue";
 import listmodal from "../components/modals/listmodal.vue"
-import welcomePage from '@/components/layout/welcomePage.vue';
+import EditForm from '@/components/auth/EditForm.vue';
 
 export default {
-    components: { chat, list, detail ,listmodal,welcomePage },
+    components: { chat, list, detail ,listmodal,EditForm },
   data() {
     return {
       showList: false,
@@ -95,6 +95,32 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+
+    ::-webkit-scrollbar {
+  width: 5px; /* Width of the scrollbar */
+  
+
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Color of the track */
+   
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent; /* Color of the thumb */
+  border-radius: 5px; /* Roundness of the thumb */
+transition: background-color 0.1s ease; /* Smooth transition */
+
+   
+}
+
+.oiwvoiwnev:hover::-webkit-scrollbar-thumb {
+  background-color: #888; /* Adjust as needed */
+
+}
+
+
 
 </style>

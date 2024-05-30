@@ -7,15 +7,14 @@
 
 
     <b-col  cols="12" xl="5" >
-      <div style=" display: flex;
-justify-content: center;
-align-items:center ;">
 
-        <div class="app-introduction animated-flex d-xl-none ">
-  <h2 style="color: rgba(255, 255, 233, 0.9); font-weight: bold;">Welcome to ChatFlow!</h2><br>
+      
+      <div style=" display: flex;justify-content: center;align-items:center ;">
 
-  
-</div>
+          <div class="app-introduction animated-flex d-xl-none ">
+            <h2 style="color: rgba(255, 255, 233, 0.9); font-weight: bold;">Welcome to ChatFlow!</h2><br>
+          </div>
+
       </div>
       
 

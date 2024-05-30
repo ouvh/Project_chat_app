@@ -3,7 +3,15 @@
 
    
             <div class="search">
+
+                 <b-button  variant="primary" >
+                        <div style="display:flex;gap:20px">
+                            <i class="bi bi-chevron-left" style="border-radius:;color:white; font-size: 2rem;"></i>
+                        </div>
+                    </b-button>
+                    
             <div class="searchbar">
+
             <b-form-input
             style="w-100"
                 v-model="searchQuery"
@@ -15,13 +23,14 @@
 
 
             </div>
-                <i v-if="!expanded"  class="bi bi-search" style="color:white; font-size: 1.8rem;"></i>
+                <i  class="bi bi-search" style="color:white; font-size: 1.8rem;"></i>
                 <div style="flex:1;display:flex;justify-content:end;gap:20px">
         
                     <b-button  variant="success" @click="groupformactive=true" >
-                        <div style="display:flex;gap:20px">
+                        <div style="display:flex;gap:20px;font-weight:bolder">
                             <div style="display:flex;align-items:center;">create group</div>
-                            <i class="bi bi-person-lines-fill" style="border-radius:;color:white; font-size: 2rem;"></i>
+                        <img src="../assets/group_icon.png" alt="Profile Picture" class="profile-picturee ppppopppo"/>
+
                         </div>
                     </b-button>
                     
@@ -104,16 +113,31 @@
       <template #modal-title>
         List
       </template>
-                                        <h2 class="mb-4 text-black font-weight-bold">Group Name</h2>
+
+                <h2 class="mb-4 text-black font-weight-bold">Group Icon</h2>
+                <b-form-group class="w-100">
+              <label for="profile-picture-input" class="profile-picture-label">
+                <img :src="profilePictureUrl || defaultProfilePicture" alt="Profile Picture" class="profile-picture ppppopppo"/>
+                <span>Upload an image</span>
+              </label>
+              <input id="profile-picture-input" type="file" @change="onFileChange" accept="image/*" class="form-control-file " style="display:none;">
+            </b-form-group>
+
+
+
+
+                <h2 class="mb-4 text-black font-weight-bold">Group Name</h2>
 
                    <b-form-input
-            style="w-100"
+            style="w-100;text-align:center"
                 v-model="groupname"
                 type="search"
                 placeholder="Group Name"
                 class="search-input"
                 @input="performSearch"
                     ></b-form-input>
+
+
 
 
                     <h2 class="mb-4 text-black font-weight-bold">Add Group Member</h2>
@@ -128,7 +152,7 @@
                         placeholder="Enter new username separated by space"
                         remove-on-delete
                         no-add-on-enter
-                        class="flex-grow-1"
+                        class="search-input "
                     ></b-form-tags>
                     </div>
                     <b-form-text id="tags-remove-on-delete-help" class="mx-auto">
@@ -232,6 +256,7 @@
 
 <script>
 
+
 export default {
   data() {
     return {
@@ -240,15 +265,51 @@ export default {
       empty:false,
       groupformactive:false,
       groupMember:[],
-      groupname:""
+      groupname:"",
+        profilePicture: null,
+      profilePictureUrl: '',
+      defaultProfilePicture: require('../assets/default_group.jpg') // Path to your default profile picture
+    
 
     };
-  },
+  },methods:{
+    onFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.profilePicture = file;
+        this.profilePictureUrl = URL.createObjectURL(file);
+      }
+    }
+  }
   
 };
 </script>
 
 <style scoped>
+
+
+ .profile-picture-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+}
+.profile-picturee{
+    width: 50px;
+  height: 50px;
+  object-fit: cover;
+
+}
 
 .iiiiiiiii{
   background-color: rgba(29, 43, 69, 0.666);
