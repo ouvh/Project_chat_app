@@ -17,6 +17,11 @@
 </template>
 
 <script>
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
+
+
+
 export default {
   data() {
     return {
@@ -27,10 +32,24 @@ export default {
   methods: {
     async login() {
       try {
-        await auth.signInWithEmailAndPassword(this.email, this.password);
         this.$router.push('/');
+        Toastify({
+        text: "Successful",
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "green",
+      }).showToast();
       } catch (error) {
-        alert(error.message);
+        Toastify({
+        text: error.message,
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "red",
+      }).showToast();
       }
     },
     goToSignUp() {

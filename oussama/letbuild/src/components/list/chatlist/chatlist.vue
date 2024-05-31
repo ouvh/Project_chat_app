@@ -10,7 +10,7 @@
         class="search-input"
         @input="performSearch"
       ></b-form-input>
-            <img src="../../../../public/assets/search.png" alt="Search Icon" class="search-icon">
+            <img style="cursor:pointer" src="../../../../public/assets/search.png" alt="Search Icon" class="search-icon">
 
     </div>
 

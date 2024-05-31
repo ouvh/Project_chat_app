@@ -1,6 +1,6 @@
 <template>
   <b-container fluid class="container">
-    <Chat />
+    <RouterView />
   </b-container>
 </template>
 
@@ -10,19 +10,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-import Home from "@/views/Home.vue"
-import LoginPage from "@/views/LoginPage.vue"
-import RegisterPage from './views/RegisterPage.vue';
-import Chat from "@/views/Chat.vue"
-import Invitations from './views/Invitations.vue';
-import AddnewCreateGroup from './views/AddnewCreateGroup.vue';
-import ResetPasswordPage from './views/ResetPasswordPage.vue';
-import Profile from './views/Profile.vue'
-import loadingPage from './components/layout/loadingPage.vue';
-
-
 export default {
-  components:{Home,LoginPage,RegisterPage,Chat,Invitations,AddnewCreateGroup,ResetPasswordPage,Profile,loadingPage}
  
 };
 

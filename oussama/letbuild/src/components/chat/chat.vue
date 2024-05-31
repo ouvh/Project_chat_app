@@ -254,6 +254,7 @@ import 'toastify-js/src/toastify.css';
 
 export default {
   components:{detail,FilePreview},
+  props:['chatid'],
   data() {
     return {
       text: "",

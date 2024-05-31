@@ -9,6 +9,8 @@
       </b-form-group>
      
       <b-button type="submit" variant="success" class="ooopp w-100 mb-2">Send</b-button>
+        <b-button @click="goToLogin" variant="info" class="ooooo w-100 mb-2">Back to Login</b-button>
+
     </b-form>
   </div>
 </template>
@@ -35,7 +37,9 @@ export default {
     },
     goToResetPassword() {
       this.$router.push('/reset-password');
-    }
+    },goToLogin() {
+        this.$router.push('/');
+      }
   }
 };
 </script>
