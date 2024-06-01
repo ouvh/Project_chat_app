@@ -10,15 +10,17 @@ import Profile from '../views/Profile.vue';
 import NotFoundPage from "../views/NotFoundPage.vue"
 import { auth } from '../firebase/Config.js';
 
+
+
 const routes = [
-  { path: '/', component: Home , meta: { requiresAuth: true }},
+  { path: '/', component: Home },
   { path: '/login', component: LoginPage },
   { path: '/signup', component: RegisterPage },
-  { path: '/chat/chatid', component: Chat, meta: { requiresAuth: true }, props: true }, // Pass props to Chat component
-  { path: '/invitations', component: Invitations, meta: { requiresAuth: true } },
-  { path: '/add-user-group', component: AddnewCreateGroup, meta: { requiresAuth: true } },
+  { path: '/chat/:chatid', component: Chat, props: true }, // Pass props to Chat component
+  { path: '/invitations', component: Invitations },
+  { path: '/add-user-group', component: AddnewCreateGroup },
   { path: '/reset-password', component: ResetPasswordPage },
-  { path: '/profile', component: Profile, meta: { requiresAuth: true } },
+  { path: '/profile', component: Profile },
   { path: '/:catchAll(.*)', component: NotFoundPage }
 ];
 

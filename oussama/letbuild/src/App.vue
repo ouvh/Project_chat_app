@@ -17,6 +17,16 @@ export default {
 </script>
 
 <style>
+body{
+      
+        background-image: url("./assets/bg.jpg");
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        width: 100%;
+  
+}
 
 .ooo {
   transition: width 0.5s ease-in-out;

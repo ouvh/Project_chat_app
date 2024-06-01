@@ -47,6 +47,11 @@
   </template>
   
   <script>
+    import Toastify from 'toastify-js';
+  import 'toastify-js/src/toastify.css';
+
+
+
   export default {
     data() {
       return {
@@ -64,15 +69,53 @@
     methods: {
       async register() {
         if (this.password !== this.confirmPassword) {
-          alert("Passwords do not match!");
+          Toastify({
+        text: "Passwords do not match!",
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "red",
+      }).showToast();
           return;
         }
         try {
           // Assume auth is set up for registration
           await auth.createUserWithEmailAndPassword(this.email, this.password);
+
+
+
+
+
+
           this.$router.push('/'); // Redirect to homepage or dashboard after registration
+          
+          Toastify({
+        text: "Successful registration",
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "green",
+      }).showToast();
+
+
+
+
+
+
+
+
         } catch (error) {
-          alert(error.message);
+          Toastify({
+        text: error.message,
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "red",
+      }).showToast();
+          
         }
       },
       goToLogin() {

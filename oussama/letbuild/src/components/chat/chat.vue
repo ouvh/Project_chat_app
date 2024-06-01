@@ -293,8 +293,11 @@ export default {
     },
     async handleFileChange(event) {
       const files = event.target.files;
+      console.log(files.length)
+      console.log(this.selectedFiles.length)
 
-      if (files.length > 20 || this.selectedFiles.length > 20){
+
+      if (this.selectedFiles.length + files.length > 20){
         this.showToast("too Many files, Maximum number is 20 file")
       }
       else
@@ -307,9 +310,7 @@ export default {
         }
         else {
         const reader = new FileReader();
-        console.log("ready")
         reader.onload = (e) => {
-          console.log("sucess"+file.name)
           this.selectedFiles.push({
             name: file.name,
             type: file.type,
@@ -370,6 +371,7 @@ export default {
   height: 100%;
   border-left: 1px solid #dddddd35;
   border-right: 1px solid #dddddd35;
+  overflow: scroll;
 }
 .top {
   width: 100%;
