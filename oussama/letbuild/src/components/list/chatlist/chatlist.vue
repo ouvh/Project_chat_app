@@ -14,9 +14,9 @@
 
     </div>
 
-    <div class="oooooooooo" @click="addMode = !addMode"          v-b-tooltip.hover title="Add new user or create new group">
+    <div class="oooooooooo" @click="this.$router.push('/add-user-group')"  v-b-tooltip.hover title="Add new user or create new group">
       <img
-        @click="addMode = !addMode"
+        @click="this.$router.push('/add-user-group')"
         :src="second"
         alt="Add Icon"
         class="add-icon"

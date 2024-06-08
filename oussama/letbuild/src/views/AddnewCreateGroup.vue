@@ -6,7 +6,7 @@
 
                  <b-button  variant="primary" >
                         <div style="display:flex;gap:20px">
-                            <i class="bi bi-chevron-left" style="border-radius:;color:white; font-size: 2rem;"></i>
+                            <i @click="this.$router.go(-1)" class="bi bi-chevron-left" style="border-radius:;color:white; font-size: 2rem;"></i>
                         </div>
                     </b-button>
                     

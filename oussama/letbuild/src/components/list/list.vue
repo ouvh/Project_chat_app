@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column h-100">
-    <userinfo />
-    <chatlist />
+    <userinfo :username="username" :profileimagelink="profileimagelink" />
+    <chatlist :chats="chats" />
   </div>
 </template>
 
@@ -11,6 +11,8 @@ import userinfo from './userinfo/userinfo.vue';
 
 export default {
   components: { userinfo, chatlist },
+  props:['username','profileimagelink','chats'],
+
 };
 </script>
 

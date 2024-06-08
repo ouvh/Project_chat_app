@@ -44,17 +44,31 @@
 
 
     </div>
+
+    <loadingPage v-if="loading" :progress="progr"/>
+
+
+
+
   </template>
   
-  <script>
-    import Toastify from 'toastify-js';
+<script>
+  import Toastify from 'toastify-js';
   import 'toastify-js/src/toastify.css';
+  import { auth, firestore, storage } from '@/firebase/Config';
+  import { createUserWithEmailAndPassword } from 'firebase/auth';
+  import { doc, setDoc ,collection,query,getDocs,getDoc,where} from 'firebase/firestore';
+  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  import loadingPage from '@/components/layout/loadingPage.vue';
 
 
 
   export default {
+    components:{loadingPage},
     data() {
       return {
+        progr:0,
+        loading:false,
         username: '',
         email: '',
         password: '',
@@ -80,17 +94,79 @@
           return;
         }
         try {
-          // Assume auth is set up for registration
-          await auth.createUserWithEmailAndPassword(this.email, this.password);
+          this.loading = true;
+          const q = query(collection(firestore,'users'),where('username','==',this.username.trim()));
+          const querySnapshot = await getDocs(q);
+          const verifiction = []
+          querySnapshot.forEach((doc)=>{
+            verifiction.push(doc.id)
+          });
+          this.progr = 30;
+
+          if (verifiction.length !== 0){
+            Toastify({
+            text: "this Username is Already used",
+            duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            backgroundColor: "red",
+          }).showToast();
+
+          this.loading = false;
+
+            return;
+          }
+
+
+        const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
+        const user = userCredential.user;
+
+        this.progr = 60;
 
 
 
+        let profileImageUrl = '';
 
 
+        if (this.profilePicture) {
+          const storageRef = ref(storage, `profileimages/${user.uid}/${this.profilePicture.name}`);
+          await uploadBytes(storageRef, this.profilePicture);
+          profileImageUrl = await getDownloadURL(storageRef);
+        }
+        else{
+            const defaultProfilePictureBlob = await this.fileToBlob(this.defaultProfilePicture);
 
-          this.$router.push('/'); // Redirect to homepage or dashboard after registration
+          const storageRef = ref(storage, `profileimages/${user.uid}/default_profile.png`);
+          await uploadBytes(storageRef, defaultProfilePictureBlob);
+          profileImageUrl = await getDownloadURL(storageRef);
           
-          Toastify({
+        }
+
+        this.progr = 80;
+
+
+
+
+        await setDoc(doc(firestore, 'users', user.uid), {
+          email: this.email,
+          username: this.username.trim(),
+          description:this.description.trim(),
+          profileImageUrl,
+          chats:[]
+        });
+
+
+        this.progr = 100;
+
+
+
+
+
+
+
+        this.$router.push('/'); // Redirect to homepage or dashboard after registration
+        Toastify({
         text: "Successful registration",
         duration: 3000,
         close: true,
@@ -107,6 +183,7 @@
 
 
         } catch (error) {
+          this.loading = false;
           Toastify({
         text: error.message,
         duration: 3000,
@@ -117,10 +194,15 @@
       }).showToast();
           
         }
+
+
+
       },
       goToLogin() {
         this.$router.push('/');
       },
+
+
       onFileChange(event) {
       const file = event.target.files[0];
       if (file) {
@@ -128,6 +210,11 @@
         this.profilePictureUrl = URL.createObjectURL(file);
       }
     },
+    async  fileToBlob(filePath){
+  const response = await fetch(filePath);
+  const blob = await response.blob();
+  return blob;
+}
     },
   };
   </script>

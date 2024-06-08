@@ -14,24 +14,42 @@
       <b-button  @click="goToResetPassword"  class="op mb-2 w-100">Forgot Password?</b-button>
     </b-form>
   </div>
+
+
+  <loadingPage v-if="loading" :progress="progr" />
 </template>
+
 
 <script>
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+import { auth } from '@/firebase/Config';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import loadingPage from '@/components/layout/loadingPage.vue';
+
 
 
 
 export default {
+  components:{loadingPage},
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      loading:false,
+      progr:0,
     };
   },
   methods: {
     async login() {
       try {
+        this.loading = true;
+        this.progr = 30;
+        await signInWithEmailAndPassword(auth, this.email, this.password);
+
+        this.progr = 100;
+
+        
         this.$router.push('/');
         Toastify({
         text: "Successful",
@@ -41,7 +59,10 @@ export default {
         position: "right", // `left`, `center` or `right`
         backgroundColor: "green",
       }).showToast();
+
       } catch (error) {
+        this.loading = false;
+
         Toastify({
         text: error.message,
         duration: 3000,

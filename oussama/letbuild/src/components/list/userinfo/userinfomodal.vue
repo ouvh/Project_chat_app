@@ -18,8 +18,8 @@
         </b-navbar>
         </div>
           
-        <b-avatar src="../../../assets/avatar.png" size="md"></b-avatar>
-        <h5  class="m-0 user-name">John Doe</h5>
+        <b-avatar :src="profileimagelink"  size="md"></b-avatar>
+        <h5  class="m-0 user-name">{{username}}</h5>
         
 
 
@@ -36,8 +36,8 @@
       <b-collapse id="nav-collapse" is-nav class="items">
         <b-navbar-nav  class="navbar">
           <b-nav-item  class="items"  to="/">Home</b-nav-item>
-          <b-nav-item class="items"  to="/settings">Profile</b-nav-item>
-          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px"   to="/settings">Logout</b-nav-item>
+          <b-nav-item class="items"  to="/profile">Profile</b-nav-item>
+          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="logout">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
 
@@ -48,13 +48,33 @@
 
 <script>
 import { BAvatar, BDropdown, BDropdownItem } from 'bootstrap-vue-3';
+import { auth } from '@/firebase/Config';
+import { signOut } from 'firebase/auth';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 
 export default {
+  props:['username','profileimagelink'],
   components: {
     BAvatar,
     BDropdown,
     BDropdownItem,
-  },
+  },methods:{
+    async logout(){
+      await signOut(auth);
+
+
+      this.$router.push('/login')
+       Toastify({
+            text: "Logout Successfully",
+            duration: 2000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            backgroundColor: "red",
+          }).showToast();
+    }
+  }
 };
 </script>
 

@@ -15,7 +15,7 @@
     </div>
     
     <div          v-b-tooltip.hover title="Add new user or create new group"
- ><i   @click="addMode = !addMode"  class="bi bi-plus kmkmk" style="color:white; font-size: 2rem;cursor:pointer"></i></div>
+ ><i   @click="this.$router.push('/add-user-group')"  class="bi bi-plus kmkmk" style="color:white; font-size: 2rem;cursor:pointer"></i></div>
 
 
   </div>

@@ -13,14 +13,14 @@ import { auth } from '../firebase/Config.js';
 
 
 const routes = [
-  { path: '/', component: Home },
+  { path: '/', component: Home ,meta: { requiresAuth: true }  },
   { path: '/login', component: LoginPage },
   { path: '/signup', component: RegisterPage },
-  { path: '/chat/:chatid', component: Chat, props: true }, // Pass props to Chat component
-  { path: '/invitations', component: Invitations },
-  { path: '/add-user-group', component: AddnewCreateGroup },
-  { path: '/reset-password', component: ResetPasswordPage },
-  { path: '/profile', component: Profile },
+  { path: '/chat/:chatid', component: Chat, props: true ,meta: { requiresAuth: true }  }, // Pass props to Chat component
+  { path: '/invitations', component: Invitations ,meta: { requiresAuth: true }  },
+  { path: '/add-user-group', component: AddnewCreateGroup,meta: { requiresAuth: true }   },
+  { path: '/reset-password', component: ResetPasswordPage ,},
+  { path: '/profile', component: Profile,meta: { requiresAuth: true }   },
   { path: '/:catchAll(.*)', component: NotFoundPage }
 ];
 
@@ -32,13 +32,28 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const currentUser = auth.currentUser;
-
+  /*
   if (requiresAuth && !currentUser) {
     next('/login');
   } else {
     next();
-  }
+  }*/
 
+  if (requiresAuth) {
+    // Listen for authentication state changes
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is logged in, allow access to the route
+        next();
+      } else {
+        // User is not logged in, redirect to the login page
+        next('/login');
+      }
+    });
+  } else {
+    // Route does not require authentication, allow access
+    next();
+  }
 
 });
 
