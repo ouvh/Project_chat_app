@@ -22,9 +22,9 @@
     </b-row>
 
 
-    <b-row style="height: 90vh;width:100%">
-      <b-col cols="3" class="animated-flex d-none d-xl-block"> 
-        <list :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username" />
+    <b-row style="height: 90vh;width:100%" >
+      <b-col cols="3" class="animated-flex d-none d-xl-block" > 
+        <list  :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username" />
       </b-col>
       <b-col cols="12" xl="9" class="ooo">    
         <welcomePage/>
@@ -64,7 +64,7 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import { auth, firestore, storage } from '@/firebase/Config';
 import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
-import { doc, setDoc ,collection,query,getDocs,getDoc,where} from 'firebase/firestore';
+import { doc, setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
 import loadingPage from '@/components/layout/loadingPage.vue';
 
@@ -72,114 +72,15 @@ export default {
   components: { chat, list, detail ,listmodal,welcomePage },
   async created(){
 
-     try{
-        const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          this.user = userDoc.data();          
-        } else {
-           Toastify({
-            text: "Something went Wrong",
-            duration: 3000,
-            close: true,
-            gravity: "bottom", // `top` or `bottom`
-            position: "right", // `left`, `center` or `right`
-            backgroundColor: "red",
-          }).showToast();
-          
-        }
-        if (this.user.chats.length !== 0){
-          const chatsQuery = query(collection(firestore, 'chats'), where('__name__', 'in', this.user.chats));
-
-          const chatDocsSnapshot = await getDocs(chatsQuery);
-
-            const chats = [];
-            chatDocsSnapshot.forEach(async (doc) => {
-
-              const chat = {
-                id: doc.id,
-                data: doc.data()
-              }
-              let friend;
-              if (chat.type === 'discussion'){
-
-                if (chat.senders[0] === auth.currentUser.uid){
-                   friend = chat.senders[1];
-                }
-                else{
-                   friend = chat.senders[0];
-                }
-
-                  const userDocRef = doc(firestore, 'users',friend);
-                  const userDoc = await getDoc(userDocRef);
-
-                if (userDoc.exists()) {
-                  friend = userDoc.data();          
-                } else {
-                  Toastify({
-                    text: "Something went Wrong",
-                    duration: 3000,
-                    close: true,
-                    gravity: "bottom", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
-                    backgroundColor: "red",
-                  }).showToast();
-              
-                     }
-              
-                chats.push({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl})
-                  
-
-              }
-              else{
-                chats.push(chat)
-              }
-      
-            });
-
-            this.chats = chats;
-            console.log(chats)
-          }
-        
-
-
-      }catch (error){
-         Toastify({
-            text: error.message,
-            duration: 3000,
-            close: true,
-            gravity: "bottom", // `top` or `bottom`
-            position: "right", // `left`, `center` or `right`
-            backgroundColor: "red",
-          }).showToast();
-          this.$router.push('/');
-      }
-    
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
+    await this.fetch()
 
 
   },
   data() {
     return {
-      user:{username:'error',profileImageUrl:null},
+      user:{username:'error',profileImageUrl:null,chats:[]},
       chats:[],
-      loading:false,
+      loading:true,
       showList: false,
       showDetail: false
     };
@@ -207,6 +108,206 @@ export default {
         this.showList = false;
         this.showDetail = false;
       }
+    }
+    ,async fetch(){
+        const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+
+        onSnapshot(userDocRef, (snapshot) => {
+
+          if (snapshot.exists()) {
+          const temp = snapshot.data(); 
+          this.user.username = temp.username;
+          this.user.profileImageUrl = temp.profileImageUrl;
+          this.user.chats = temp.chats;
+          this.fetchdata(temp)
+
+        } else {
+           Toastify({
+            text: "Something went Wrong",
+            duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            backgroundColor: "red",
+          }).showToast();
+          
+        }
+
+
+         })
+        
+       
+    },
+    async fetchdata(user){
+      if (user.chats.length !== 0){
+
+
+
+          const chatsQuery = query(collection(firestore, 'chats'), where('__name__', 'in', user.chats));
+
+          onSnapshot(chatsQuery, (snapshot) => {
+
+
+
+            snapshot.forEach(async (DOC) => {
+              
+                const chat = {
+                  id: DOC.id,
+                  ...DOC.data()
+                }
+                let friend;
+                let friendid;
+                if (chat.senders[0] === auth.currentUser.uid){
+                   friendid = chat.senders[1];
+                }
+                else{
+                   friendid = chat.senders[0];
+                }
+                const chatDocRef = doc(firestore, 'chats', chat.id);
+                const messagesCollectionRef = collection(chatDocRef, 'message');
+                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'), limit(1));
+
+                onSnapshot(messagesQuery, async (snapshot) => {
+                  
+
+              if (chat.type === 'discussion'){
+
+                  console.log(friendid)
+                  const userDocRef = doc(firestore, 'users',friendid);
+
+                  const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                  friend = userDoc.data();          
+                } else {
+                  Toastify({
+                    text: "Something went Wrong",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "red",
+                  }).showToast();
+              
+                }
+
+                const querySnapshot = snapshot;
+                let content;
+                let time;
+
+                if (!querySnapshot.empty) {
+                // There is at least one message in the subcollection
+                const lastMessageDoc = querySnapshot.docs[0];
+                const lastMessageData = lastMessageDoc.data();
+                if (lastMessageData.type === 'text'){
+                  content = lastMessageData.content;
+                  time = lastMessageData.senttime;
+                }
+                else if(lastMessageData.type === 'image'){
+                  content = 'Image Sent';
+                  time = lastMessageData.senttime;
+
+                }
+                else{
+                  content = 'document Sent';
+                  time = lastMessageData.senttime;
+
+                }
+                
+              } else {
+                        // The subcollection is empty (no messages)
+                        Toastify({
+                    text: "something went wrong",
+                    duration: 2000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "red",
+                  }).showToast();
+                  this.$router.push('/');
+              }
+
+
+                this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time})
+                  
+
+              }else{
+         
+                const querySnapshot = snapshot;
+                let content;
+                let time;
+
+                if (!querySnapshot.empty) {
+                // There is at least one message in the subcollection
+                const lastMessageDoc = querySnapshot.docs[0];
+                const lastMessageData = lastMessageDoc.data();
+                if (lastMessageData.type === 'text'){
+                  content = lastMessageData.content;
+                  time = lastMessageData.senttime;
+                }
+                else if(lastMessageData.type === 'image'){
+                  content = 'Image Sent';
+                  time = lastMessageData.senttime;
+
+                }
+                else{
+                  content = 'document Sent';
+                  time = lastMessageData.senttime;
+
+                }
+                
+              } else {
+                        // The subcollection is empty (no messages)
+                        Toastify({
+                    text: "something went wrong",
+                    duration: 2000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "red",
+                  }).showToast();
+                  this.$router.push('/');
+              }
+
+                this.updater({chat,time,content})
+              }
+
+
+
+                })
+
+
+
+
+            });
+
+
+           })
+
+          this.loading = false;
+
+
+        }
+        else{
+          this.loading = false;
+        }
+
+
+    }
+    ,
+    updater(data){
+      const index = this.chats.findIndex(obj => obj.id === data.id);
+
+      if(index === -1){
+        this.chats.push(data)
+      }
+      else{
+        this.chats[index] = data;
+      }
+      this.chats = [...this.chats].sort((a, b) => b.time.seconds - a.time.seconds);
+
+        console.log(this.chats)
+
     }
   }
 

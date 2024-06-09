@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column h-100">
+  <div  class="d-flex flex-column h-100">
     <userinfo :username="username" :profileimagelink="profileimagelink" />
     <chatlist :chats="chats" />
   </div>

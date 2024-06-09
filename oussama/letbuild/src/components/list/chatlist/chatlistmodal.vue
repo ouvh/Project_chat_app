@@ -20,14 +20,25 @@
 
   </div>
 
-    <div class="item">
-        <img src="../../../../public/assets/avatar.png" alt="">
-        <div class="texts" style="overflow:hidden">
-            <span style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Jane Doe</span>
-            <p  style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Hello</p>
-        </div>
-    </div>
+     <div v-for="(chat, index) in chats" :key="index" class="item">
+      <img v-if="chat.type === 'discussion'" :src="chat.friendpic" alt="" />
+      <img v-if="chat.type === 'group'" :src="chat.groupicon" alt="" />
+      <div class="texts" style="overflow:hidden">
+        <span v-if="chat.type === 'discussion'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          {{ chat.friendusername }}
+        </span>
+        <span v-if="chat.type === 'group'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          {{ chat.groupname }}
+        </span>
 
+        <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          {{ chat.content }}
+        </p>
+      </div>
+
+              <div style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">15</div></div>
+
+    </div>
     
 </div>
   
@@ -35,6 +46,7 @@
 
 <script>
 export default {
+  props:['chats'],
     data(){
         return{
             addMode:true,
@@ -47,6 +59,13 @@ export default {
 </script>
 
 <style scoped>
+
+.indicator{
+  border-radius: 40%;
+  background-color: #2a8fc2;
+  padding: 5px;
+}
+
 .kmkmk{
   background-color:green ;
   padding-right: 5px;
