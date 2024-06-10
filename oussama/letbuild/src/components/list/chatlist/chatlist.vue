@@ -7,7 +7,6 @@
           type="search"
           placeholder="Search"
           class="search-input"
-          @input="performSearch"
         ></b-form-input>
         <img
           style="cursor:pointer"
@@ -33,11 +32,11 @@
       </div>
     </div>
 <div class="ppppppppppppp">
-      <div v-for="(chat, index) in chats" :key="index" class="item ">
+      <div v-for="(chat, index) in filteredChats" :key="index" class="item ">
         <img v-if="chat.type === 'discussion'" :src="chat.friendpic" alt="" />
         <img v-if="chat.type === 'group'" :src="chat.groupicon" alt="" />
         
-        <div class="texts" style="overflow:hidden">
+        <div @click="this.$router.push(`/chat/${chat.id}`)" class="texts" style="overflow:hidden">
           <span v-if="chat.type === 'discussion'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             {{ chat.friendusername }}
           </span>
@@ -51,7 +50,7 @@
           
         </div>
         
-        <div style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">15</div></div>
+        <div v-if="chat.unreadmessages !== 0" style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">{{chat.unreadmessages}}</div></div>
 
       </div>
       
@@ -71,17 +70,29 @@ export default {
   data() {
     return {
       searchQuery: '',
-      chattt:[],
       addMode: false,
       first: require('../../../../public/assets/minus.png'),
       second: require('../../../../public/assets/plus.png')
     };
   },
-  methods: {
-    performSearch() {
-      // Implement your search logic here
-    }
-  }
+  computed: {
+    filteredChats() {
+      console.log(this.chats)
+      if (!this.searchQuery) {
+        return this.chats;
+      }
+      return this.chats.filter((chat) => {
+        const query = this.searchQuery.toLowerCase();
+        if (chat.type === 'discussion') {
+          return chat.friendusername.toLowerCase().includes(query);
+        } else if (chat.type === 'group') {
+          return chat.groupname.toLowerCase().includes(query);
+        }
+        return false;
+      });
+    },
+  },
+
 };
 </script>
 
@@ -122,9 +133,10 @@ export default {
 }
 
 .indicator{
-  border-radius: 40%;
+  border-radius: 10px;
   background-color: #2a8fc2;
-  padding: 5px;
+  padding: 7px;
+  
 }
 
 .search-input {
@@ -164,9 +176,38 @@ export default {
 .ppppppppppppp:hover::-webkit-scrollbar-thumb {
   background-color: #888;
 }
+
 .ppppppppppppp{
-  height: 55vh;
+  height: 50vh;
   overflow-y: auto;
+}
+
+@media (max-height: 300px) {
+  .ppppppppppppp {
+    height: 30vh; /* Adjust this value as needed */
+  }
+}
+
+
+/* Adjust height for medium screens (tablets) */
+@media (min-height: 300px) and (max-height: 350px) {
+  .ppppppppppppp {
+    height: 35vh; /* Adjust this value as needed */
+  }
+}
+
+@media (min-height: 400px) and (max-height: 500px) {
+  .ppppppppppppp {
+    height: 35vh; /* Adjust this value as needed */
+  }
+}
+
+
+/* Adjust height for large screens (desktops) */
+@media (min-height: 1025px) {
+  .ppppppppppppp {
+    height: 50vh; /* Adjust this value as needed */
+  }
 }
 
 

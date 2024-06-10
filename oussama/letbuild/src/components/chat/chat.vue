@@ -3,10 +3,13 @@
     
     <div class="top">
       <div class="user">
-        <img src="../../../public/assets/avatar.png" alt="">
+        <img v-if="chatdata.type==='discussion'" :src="chatdata.friend.profileImageUrl" alt="">
+        <img v-if="chatdata.type==='group'" :src="chatdata.groupicon" alt="">
+
         <div class="texts">
-          <span>Jan Doe</span>
-          <p>Lorem ipsum dolor, sit amet</p>
+          <span v-if="chatdata.type==='discussion'">{{chatdata.friend.username}}</span>
+          <span  v-if="chatdata.type==='group'" >{{chatdata.groupname}}</span>
+
         </div>
       </div>
       <div class="icons">
@@ -14,164 +17,59 @@
       </div>
     </div>
 
+
     <div class="center">
 
-      <div class="message photo">
+      <template :key="index"  v-for="message,index in messages">
+
+      <div v-if="message.type==='image'" :class="{ 'message': message.author!== currentuser, 'message_own': message.author=== currentuser ,'file': false,'photo': true}" >
         
-        <img src="../../../public/assets/avatar.png" alt="">
+        <img v-if="message.author!== currentuser" :src="message.profileImageUrl" alt="">
         
         <div class="text">
           
-          <img style="cursor:pointer" @click="download" src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
+          <img style="cursor:pointer" @click="download" :src="message.content" alt="">
 
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-          <span style="display:flex;align-items:end;gap:5px" class="time">10min ago    <span style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">Image<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br>
+          <p>{{message.messagecontent}}</p>
+          <span @click="downloadFile(message.content)"  style="display:flex;align-items:end;gap:5px" class="time">{{formatTimeAgo(message.senttime)}} <span style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">Image<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br>
 </span></span>
 
 
         </div>
             
       </div>
+
       
-      <div class="message_own photo">
-          <span style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">Image<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br></span>
+      <div v-if="message.type==='text'" :class="{ 'message': message.author!== currentuser, 'message_own': message.author=== currentuser ,'file': false,'photo': false}">
+        <img v-if="message.author!== currentuser" :src="message.profileImageUrl" alt="">
 
-
-        
-        
         <div class="text">
-          
-          <img style="cursor:pointer" @click="download" src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-          <span class="time">10min ago</span>
-
+          <p>{{message.content}}</p>
+                               <span class="time">{{formatTimeAgo(message.senttime)}}</span>
 
         </div>
       </div>
 
-      <div class="message_own">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                               <span class="time">10min ago</span>
-
-        </div>
-      </div>
-
-      <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                               <span class="time">10min ago</span>
-
-        </div>
-      </div>
-
-      <div class="message_own">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
-
-        </div>
-      </div>
-
-      <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                               <span class="time">10min ago</span>
-
-        </div>
-      </div>
-
-      <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                               <span class="time">10min ago</span>
-
-        </div>
-      </div>
-      <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
-
-        </div>
-      </div>
-      <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
-
-        </div>
-      </div>
-        <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
-
-        </div>
-      </div>
-
-
-       <div class="message file">
-        <img src="../../../public/assets/avatar.png" alt="">
+      
+       <div v-if="message.type==='file'" :class="{ 'message': message.author!== currentuser, 'message_own': message.author=== currentuser ,'file': true,'photo': false}">
+        <img v-if="message.author!== currentuser" :src="message.profileImageUrl" alt="">
         <div @click="download" style="cursor:pointer" class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
+          <p>{{message.filename}}</p>
+                     <span class="time">{{formatTimeAgo(message.senttime)}}</span>
 
         </div>
-          <span style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">File<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br>
+          <span @click="downloadFile(message.content)" style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">File<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br>
 </span>
       </div>
 
 
-       <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit?</p>
-                     <span class="time">10min ago</span>
 
-        </div>
-      </div>
 
-       <div class="message">
-        <img src="../../../public/assets/avatar.png" alt="">
-        <div class="text">
-          <p>
-            Lorem ipsum um sint quist quas nesciunt eos velit?
-            </p>
-           <span class="time">10min ago</span>
+      </template>
 
-          
-        </div>
-      </div>
+     
 
-       
-      <div class="message_own file">
-
-          <span style="cursor:pointer" class="time">File                   <img style="height:20px;width:20px" src="../../assets/download.png" alt=""><br>
-</span>
-          <br>
-
-        
-        <div @click="download" style="cursor:pointer" class="text">
-
-          <p>Lorem ipsum um sint quist quas nesciunt eos velit? </p>
-          <span class="time">10min ago</span>
-
-        </div>
-
-        
-
-      </div>
       
-
-
     
     <div ref="targetscroll"></div>
 
@@ -206,7 +104,7 @@
           <i @click="toggleEmojiPicker" class="bi bi-emoji-smile-fill" style="cursor:pointer;margin-right:10px;font-size: 1.8rem;"></i>
       </div>
 
-        <b-button  variant="success" @click="o" >
+        <b-button  variant="success" @click="send" >
                         <div style="display:flex;gap:20px;font-weight:bolder">
                             <div style="display:flex;align-items:center;">Send</div>
                         <img src="../../assets/send.png" alt="Profile Picture" class="profile-picturee ppppojpppo"/>
@@ -217,6 +115,9 @@
 
 
     </div>
+  
+
+      <loadingPage v-if="loading" :progress="progr"/>
 
 
   </div>
@@ -240,28 +141,45 @@
       <detail />
     </b-modal>
 
-    
+    <a download="pp.txt" style="display:hidden" ref="download"></a>
 </template>
 
 <script>
 import { EmojiButton } from '@joeattardi/emoji-button';
 import detail from "@/components/detail/detail.vue"
 import FilePreview from '../layout/filesPreview.vue';
+import loadingPage from '@/components/layout/loadingPage.vue';
+import { v4 as uuidv4 } from 'uuid';
+import { formatDistanceToNow } from 'date-fns';
+
+
+
+
+
+import { auth, firestore, storage } from '@/firebase/Config';
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion, Timestamp,addDoc} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
+
+
 
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 
 
 export default {
-  components:{detail,FilePreview},
-  props:['chatid'],
+  components:{detail,FilePreview,loadingPage},
+  props:['messages','chatdata'],
   data() {
     return {
+      currentuser:auth.currentUser.uid,
       text: "",
       picker: new EmojiButton(),
       showDetail: false,
       selectedFiles: [],
       maxFileSize: 10 * 1024 * 1024,
+      loading:false,
+      progr:0
 
 
     };
@@ -293,15 +211,14 @@ export default {
     },
     async handleFileChange(event) {
       const files = event.target.files;
-      console.log(files.length)
-      console.log(this.selectedFiles.length)
-
+      
 
       if (this.selectedFiles.length + files.length > 20){
         this.showToast("too Many files, Maximum number is 20 file")
       }
       else
       {for (let i = 0; i < files.length; i++) {
+        console.log(files[i])
 
         const file = files[i];
 
@@ -314,7 +231,8 @@ export default {
           this.selectedFiles.push({
             name: file.name,
             type: file.type,
-            url: e.target.result
+            url: e.target.result,
+            file:file
           });
           const targetElement = this.$refs.targetscroll;
 
@@ -330,7 +248,8 @@ export default {
 
         }
       }}
-    },showToast(arg) {
+    },
+    showToast(arg) {
       Toastify({
         text: arg,
         duration: 3000,
@@ -339,8 +258,104 @@ export default {
         position: "right", // `left`, `center` or `right`
         backgroundColor: "red",
       }).showToast();
+    },async send(){
+
+      if(this.text.trim()==='' && this.selectedFiles.length === 0){
+        return
+      }
+
+
+
+
+
+      const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+      const messagesCollectionRef = collection(ChatDocRef, 'message');
+
+      if(this.selectedFiles.length === 0){
+            await addDoc(messagesCollectionRef,{
+            author:this.currentuser,
+            type:'text',
+            senttime:Timestamp.now(),
+            filename:'',
+            content:this.text,
+            unread:true
+            });
+
+            this.text = '';
+
+          this.scrolllll()
+          
+          
+      }else{ 
+
+
+
+
+    this.loading = true
+    const promises = this.selectedFiles.map(async (file) => {
+    const type = file.type.split('/')[0];
+    const uniqueName = `${Date.now()}_${uuidv4()}_${file.name}`;
+    const storageRef = ref(storage, `chats/${this.chatdata.id}/${uniqueName}`);
+    await uploadBytes(storageRef, file.file);
+    const profileImageUrl = await getDownloadURL(storageRef);
+    const messageType = type === 'image' ? 'image' : 'file';
+
+    await addDoc(messagesCollectionRef, {
+      author: this.currentuser,
+      type: messageType,
+      senttime: Timestamp.now(),
+      filename: file.name,
+      content: profileImageUrl,
+      unread: true,
+      messagecontent: this.text
+    });
+    this.progr += parseInt(100/this.selectedFiles.length)
+  });
+
+  // Wait for all promises to resolve
+  await Promise.all(promises);
+    this.text = '';
+  this.loading = false
+  this.progr = 0;
+              this.selectedFiles = [];
+
+    this.scrolllll()
+
+
+
+        
+        
+
+      }
+
+
+
+
+
+    },scrolllll(){
+      const targetElement = this.$refs.targetscroll;
+
+      // Check if the element exists
+      if (targetElement) {
+        // Scroll to the element
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+      }
+
+    },
+    downloadFile(url) {
+      const targetElement = this.$refs.download;
+      targetElement.href = url;
+      targetElement.click()
+  },formatTimeAgo(timestamp) {
+      const sentTime = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+      return formatDistanceToNow(sentTime, { addSuffix: true });// Using dayjs library to format "time ago"
+    }
+    ,updatetime(){
+      /// add read_by 
     }
   }
+    
+  
 };
 </script>
 

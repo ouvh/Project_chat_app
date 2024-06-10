@@ -20,7 +20,7 @@
 
   </div>
 
-     <div v-for="(chat, index) in chats" :key="index" class="item">
+     <div @click="this.$router.push(`/chat/${chat.id}`)" v-for="(chat, index) in filteredChats" :key="index" class="item">
       <img v-if="chat.type === 'discussion'" :src="chat.friendpic" alt="" />
       <img v-if="chat.type === 'group'" :src="chat.groupicon" alt="" />
       <div class="texts" style="overflow:hidden">
@@ -36,7 +36,7 @@
         </p>
       </div>
 
-              <div style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">15</div></div>
+        <div v-if="chat.unreadmessages !== 0" style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">{{chat.unreadmessages}}</div></div>
 
     </div>
     
@@ -44,16 +44,35 @@
   
 </template>
 
+
+
 <script>
 export default {
   props:['chats'],
     data(){
         return{
+            searchQuery:'',
             addMode:true,
             first:require("../../../../public/assets/minus.png"),
             second:require("../../../../public/assets/plus.png")
         }
-    }
+    },
+    computed: {
+    filteredChats() {
+      if (!this.searchQuery) {
+        return this.chats;
+      }
+      return this.chats.filter((chat) => {
+        const query = this.searchQuery.toLowerCase();
+        if (chat.type === 'discussion') {
+          return chat.friendusername.toLowerCase().includes(query);
+        } else if (chat.type === 'group') {
+          return chat.groupname.toLowerCase().includes(query);
+        }
+        return false;
+      });
+    },
+  },
 
 }
 </script>
@@ -61,9 +80,9 @@ export default {
 <style scoped>
 
 .indicator{
-  border-radius: 40%;
+  border-radius: 10px;
   background-color: #2a8fc2;
-  padding: 5px;
+  padding: 7px;
 }
 
 .kmkmk{

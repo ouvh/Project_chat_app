@@ -22,28 +22,46 @@
    <div class="iiiiiiiii">
 
 
-    <div v-if="empty" class="item">
-        <img src="@/assets/avatar.png" alt="">
+    <div :key="index" v-for="invitation,index in filteredinvitaions" class="item">
+        <img v-if="invitation.type === 'discussion'" :src="invitation.friendpic" alt="" />
+        <img v-if="invitation.type === 'group'" :src="invitation.groupicon" alt="" />
+
         <div class="texts" style="overflow:hidden">
-            <span style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Jane Doe</span>
-            <p  style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">Hello</p>
+           
+            <span v-if="invitation.type === 'discussion'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ invitation.friendusername }}
+            </span>
+            <p v-if="invitation.type === 'discussion'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Friend Invitation</p>
+
+
+            <span v-if="invitation.type === 'group'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ invitation.groupname }}
+            </span>
+            <p v-if="invitation.type === 'group'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Group Invitation</p>
+
         </div>
-<div style="flex:1;display:flex;justify-content:end;align-items:space-between;gap:50px">
+
+
+
+
+        <div style="flex:1;display:flex;justify-content:end;align-items:space-between;gap:50px">
   
-            <b-button  variant="success"  >
+            <b-button @click="acceptinvitation(invitation)"  variant="success"  >
                 <i class="bi bi-check-lg" style="border-radius:;color:white; font-size: 2rem;"></i>
             </b-button>
-             <b-button  variant="danger"  >
+             <b-button @click="refuseinvitation(invitation)"  variant="danger"  >
                 <i   class="bi bi-x-lg" style="color:white; font-size: 1.8rem;"></i>
             </b-button>
-</div>
+  
+  
+  </div>
 
 
     </div>
 
 
 
-    <div class="ooll" v-if="!empty">
+    <div class="ooll" v-if="invitations.length === 0">
       <h3 style=" margin: 10px;
   padding: 10px;
   border-radius: 8px;
@@ -99,17 +117,226 @@
 
 <script>
 import detail from "@/components/detail/detail.vue"
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
+import { auth, firestore, storage } from '@/firebase/Config';
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion, Timestamp,addDoc} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
 
 export default {
+  props:['invitations'],
   components:{detail},
   data() {
     return {
       text: "",
+      searchQuery:'',
       showDetail: false,
       empty:false
 
     };
   },
+  computed: {
+    filteredinvitaions() {
+      if (!this.searchQuery) {
+        return this.invitations;
+      }
+      return this.invitations.filter((invitation) => {
+        const query = this.searchQuery.toLowerCase();
+        if (invitation.type === 'discussion') {
+          return invitation.friendusername.toLowerCase().includes(query);
+        } else if (invitation.type === 'group') {
+          return invitation.groupname.toLowerCase().includes(query);
+        }
+        return false;
+      });
+    },
+  },methods:{
+    async acceptinvitation(invitation){
+
+
+      if(invitation.type === 'group'){
+        //remove invitation from user invitations
+            const ChatDocRef = doc(firestore, "chats", invitation.id);
+            const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+            try{
+              await updateDoc(ChatDocRef, {
+              sentinvitations: arrayRemove(auth.currentUser.uid)
+            });
+
+            await updateDoc(UserDocRef, {
+              invitations: arrayRemove({id:invitation.id,type:invitation.type})
+            });
+
+            await updateDoc(UserDocRef, {
+              chats: arrayUnion(invitation.id)
+            });
+
+            await updateDoc(ChatDocRef, {
+              senders: arrayUnion(auth.currentUser.uid)
+            });
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+
+            }
+        //add chatid to user chats
+        // remove invitation from chat sent invitations
+
+      }
+      else{
+          //remove invitation from user invitations
+          // create chat and add its id to both user
+          // remove invitation from friend sent invitations
+          const friendDocRef = doc(firestore, "users", invitation.id);
+          const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+            try{
+              await updateDoc(friendDocRef, {
+              sentinvitations: arrayRemove(auth.currentUser.uid)
+            });
+
+            await updateDoc(UserDocRef, {
+              invitations: arrayRemove({id:invitation.id,type:invitation.type})
+            });
+
+            const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[invitation.id,auth.currentUser.uid],type:'discussion',createdat:Timestamp.now()});
+
+            await updateDoc(UserDocRef, {
+              chats: arrayUnion(chatDocRef.id)
+            });
+
+            await updateDoc(friendDocRef, {
+              chats: arrayUnion(chatDocRef.id)
+            });
+
+            await updateDoc(UserDocRef, {
+              friends: arrayUnion(invitation.id)
+            });
+
+            await updateDoc(friendDocRef, {
+              friends: arrayUnion(auth.currentUser.uid)
+            });
+
+           
+
+
+
+
+
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+
+
+
+    },
+    async refuseinvitation(invitation){
+       if(invitation.type === 'group'){
+        //remove invitation from user invitations
+        // remove invitation from chat sent invitations
+          const ChatDocRef = doc(firestore, "chats", invitation.id);
+          const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+            try{
+              await updateDoc(ChatDocRef, {
+              sentinvitations: arrayRemove(auth.currentUser.uid)
+            });
+
+            await updateDoc(UserDocRef, {
+              invitations: arrayRemove({id:invitation.id,type:invitation.type})
+            });
+
+            
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+
+            }
+
+      }
+      else{
+          //remove invitation from user invitations
+          // remove invitation from friend sent invitations
+          const friendDocRef = doc(firestore, "users", invitation.id);
+          const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+          try{
+              await updateDoc(friendDocRef, {
+              sentinvitations: arrayRemove(auth.currentUser.uid)
+            });
+
+            await updateDoc(UserDocRef, {
+              invitations: arrayRemove({id:invitation.id,type:invitation.type})
+            });
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+
+            }
+          
+
+      }
+
+
+    }
+  }
   
 };
 </script>

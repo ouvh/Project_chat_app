@@ -23,7 +23,7 @@
 
 
     <b-row style="height: 90vh;width:100%" >
-      <b-col cols="3" class="animated-flex d-none d-xl-block" > 
+      <b-col cols="3" style="height:100%" class="animated-flex d-none d-xl-block" > 
         <list  :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username" />
       </b-col>
       <b-col cols="12" xl="9" class="ooo">    
@@ -64,7 +64,7 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import { auth, firestore, storage } from '@/firebase/Config';
 import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
-import { doc, setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot} from 'firebase/firestore';
+import { doc, setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
 import loadingPage from '@/components/layout/loadingPage.vue';
 
@@ -146,6 +146,7 @@ export default {
           const chatsQuery = query(collection(firestore, 'chats'), where('__name__', 'in', user.chats));
 
           onSnapshot(chatsQuery, (snapshot) => {
+            this.chats = [];
 
 
 
@@ -155,6 +156,8 @@ export default {
                   id: DOC.id,
                   ...DOC.data()
                 }
+                console.log(chat)
+
                 let friend;
                 let friendid;
                 if (chat.senders[0] === auth.currentUser.uid){
@@ -168,109 +171,100 @@ export default {
                 const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'), limit(1));
 
                 onSnapshot(messagesQuery, async (snapshot) => {
+
+                              const querySnapshot = snapshot;
+                              let content;
+                              let time;
+                              let unreadmessages;
+
+                              const unreadMessagesQuery = query(messagesCollectionRef, where('unread', '==', true),where('author','!=',auth.currentUser.uid));
+                              const temp = await getCountFromServer(unreadMessagesQuery);
+                              unreadmessages = temp.data().count;
+
+
+
+
                   
 
-              if (chat.type === 'discussion'){
+                              if (chat.type === 'discussion'){
 
-                  console.log(friendid)
-                  const userDocRef = doc(firestore, 'users',friendid);
+                                  const userDocRef = doc(firestore, 'users',friendid);
+                                  const userDoc = await getDoc(userDocRef);
 
-                  const userDoc = await getDoc(userDocRef);
+                                if (userDoc.exists()) {
+                                  friend = userDoc.data();          
+                                } else {
+                                  Toastify({
+                                    text: "Something went Wrong",
+                                    duration: 3000,
+                                    close: true,
+                                    gravity: "bottom", // `top` or `bottom`
+                                    position: "right", // `left`, `center` or `right`
+                                    backgroundColor: "red",
+                                  }).showToast();
+                              
+                                }
 
-                if (userDoc.exists()) {
-                  friend = userDoc.data();          
-                } else {
-                  Toastify({
-                    text: "Something went Wrong",
-                    duration: 3000,
-                    close: true,
-                    gravity: "bottom", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
-                    backgroundColor: "red",
-                  }).showToast();
-              
-                }
+                                if (!querySnapshot.empty) {
+                                // There is at least one message in the subcollection
+                                const lastMessageDoc = querySnapshot.docs[0];
+                                const lastMessageData = lastMessageDoc.data();
+                                if (lastMessageData.type === 'text'){
+                                  content = lastMessageData.content;
+                                  time = lastMessageData.senttime;
+                                }
+                                else if(lastMessageData.type === 'image'){
+                                  content = 'Image Sent';
+                                  time = lastMessageData.senttime;
 
-                const querySnapshot = snapshot;
-                let content;
-                let time;
+                                }
+                                else{
+                                  content = 'document Sent';
+                                  time = lastMessageData.senttime;
 
-                if (!querySnapshot.empty) {
-                // There is at least one message in the subcollection
-                const lastMessageDoc = querySnapshot.docs[0];
-                const lastMessageData = lastMessageDoc.data();
-                if (lastMessageData.type === 'text'){
-                  content = lastMessageData.content;
-                  time = lastMessageData.senttime;
-                }
-                else if(lastMessageData.type === 'image'){
-                  content = 'Image Sent';
-                  time = lastMessageData.senttime;
-
-                }
-                else{
-                  content = 'document Sent';
-                  time = lastMessageData.senttime;
-
-                }
-                
-              } else {
-                        // The subcollection is empty (no messages)
-                        Toastify({
-                    text: "something went wrong",
-                    duration: 2000,
-                    close: true,
-                    gravity: "bottom", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
-                    backgroundColor: "red",
-                  }).showToast();
-                  this.$router.push('/');
-              }
+                                }
+                                
+                              } else {
+                                  content = 'Invitation Accepted';
+                                  time = chat.createdat;
+                                      
+                              }
 
 
-                this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time})
-                  
+                                this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time,unreadmessages})
+                                  
 
-              }else{
-         
-                const querySnapshot = snapshot;
-                let content;
-                let time;
+                              }else{
+                        
+                               
 
-                if (!querySnapshot.empty) {
-                // There is at least one message in the subcollection
-                const lastMessageDoc = querySnapshot.docs[0];
-                const lastMessageData = lastMessageDoc.data();
-                if (lastMessageData.type === 'text'){
-                  content = lastMessageData.content;
-                  time = lastMessageData.senttime;
-                }
-                else if(lastMessageData.type === 'image'){
-                  content = 'Image Sent';
-                  time = lastMessageData.senttime;
+                                if (!querySnapshot.empty) {
+                                // There is at least one message in the subcollection
+                                const lastMessageDoc = querySnapshot.docs[0];
+                                const lastMessageData = lastMessageDoc.data();
+                                if (lastMessageData.type === 'text'){
+                                  content = lastMessageData.content;
+                                  time = lastMessageData.senttime;
+                                }
+                                else if(lastMessageData.type === 'image'){
+                                  content = 'Image Sent';
+                                  time = lastMessageData.senttime;
 
-                }
-                else{
-                  content = 'document Sent';
-                  time = lastMessageData.senttime;
+                                }
+                                else{
+                                  content = 'document Sent';
+                                  time = lastMessageData.senttime;
 
-                }
-                
-              } else {
-                        // The subcollection is empty (no messages)
-                        Toastify({
-                    text: "something went wrong",
-                    duration: 2000,
-                    close: true,
-                    gravity: "bottom", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
-                    backgroundColor: "red",
-                  }).showToast();
-                  this.$router.push('/');
-              }
+                                }
+                                
+                                } else {
+                                  content = 'Invitation Accepted';
+                                  time = chat.createdat;
+                                }
 
-                this.updater({chat,time,content})
-              }
+                                this.updater({...chat,time,content,unreadmessages})
+                              }
+
 
 
 
@@ -285,7 +279,6 @@ export default {
            })
 
           this.loading = false;
-
 
         }
         else{

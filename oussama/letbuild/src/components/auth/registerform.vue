@@ -57,7 +57,7 @@
   import 'toastify-js/src/toastify.css';
   import { auth, firestore, storage } from '@/firebase/Config';
   import { createUserWithEmailAndPassword } from 'firebase/auth';
-  import { doc, setDoc ,collection,query,getDocs,getDoc,where} from 'firebase/firestore';
+  import { doc, setDoc ,collection,query,getDocs,getDoc,where,Timestamp} from 'firebase/firestore';
   import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
   import loadingPage from '@/components/layout/loadingPage.vue';
 
@@ -93,6 +93,63 @@
       }).showToast();
           return;
         }
+
+        const minLength = 3;
+        const maxLength = 50;
+        const regex = /^[a-zA-Z0-9_]+$/;
+
+        if (this.username.length < minLength) {
+
+          const usernameError = `Username must be at least ${minLength} characters long.`;
+          Toastify({
+          text:usernameError,
+          duration: 3000,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "right", // `left`, `center` or `right`
+          backgroundColor: "red",
+        }).showToast();
+        return;
+
+        } else if (this.username.length > maxLength) {
+
+          const usernameError = `Username must be no more than ${maxLength} characters long.`;
+          Toastify({
+          text:usernameError,
+          duration: 3000,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "right", // `left`, `center` or `right`
+          backgroundColor: "red",
+        }).showToast();
+        return;
+
+        } else if (!regex.test(this.username)) {
+
+          const usernameError = 'Username can only contain alphanumeric characters and underscores.';
+          Toastify({
+          text:usernameError,
+          duration: 3000,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "right", // `left`, `center` or `right`
+          backgroundColor: "red",
+        }).showToast();
+        return;
+
+        }
+
+  
+
+
+
+
+
+
+
+
+
+
         try {
           this.loading = true;
           const q = query(collection(firestore,'users'),where('username','==',this.username.trim()));
@@ -153,7 +210,11 @@
           username: this.username.trim(),
           description:this.description.trim(),
           profileImageUrl,
-          chats:[]
+          chats:[],
+          invitations:[],
+          sentinvitations:[],
+          friends:[],
+          createdat:Timestamp.now()
         });
 
 
