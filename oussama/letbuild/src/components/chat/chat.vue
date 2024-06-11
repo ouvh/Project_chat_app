@@ -546,6 +546,8 @@ export default {
                                             const userDocRef = doc(firestore, 'users', message.author);
                                             const userDoc = await getDoc(userDocRef);
                                             const temp = {...userDoc.data()};
+                                            // if you have read this comment that mean you have spent a lot of time reading this code, go rest some time, by bourich and oussama **
+
                                             message.profileImageUrl = temp.profileImageUrl;
                                         }
 
