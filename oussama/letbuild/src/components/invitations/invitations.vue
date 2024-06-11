@@ -344,7 +344,7 @@ export default {
 <style scoped>
 
 .iiiiiiiii{
-  background-color: rgba(29, 43, 69, 0.666);
+  background-color: hidden;
 
   flex: 1;
   overflow-y: scroll;

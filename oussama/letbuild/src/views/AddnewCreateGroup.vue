@@ -25,13 +25,13 @@
                 <i  class="bi bi-search" style="color:white; font-size: 1.8rem;"></i>
                 <div style="flex:1;display:flex;justify-content:end;gap:20px">
         
-                    <b-button  variant="success" @click="groupformactive=true" >
+                    <div style="cursor:pointer"   @click="groupformactive=true" >
                         <div style="display:flex;gap:20px;font-weight:bolder">
-                            <div style="display:flex;align-items:center;">create group</div>
-                        <img src="../assets/group_icon.png" alt="Profile Picture" class="profile-picturee ppppopppo"/>
+                            <!--<div style="display:flex;align-items:center;">create group</div>-->
+                        <img src="../assets/add-group.png" alt="Profile Picture" class="profile-picturee ppppopppo"/>
 
                         </div>
-                    </b-button>
+                    </div>
                     
                 
 
@@ -625,7 +625,7 @@ export default {
 }
 
 .iiiiiiiii{
-  background-color: rgba(29, 43, 69, 0.666);
+  background-color: hidden;
 
   flex: 1;
   overflow-y: scroll;
