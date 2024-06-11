@@ -1,4 +1,5 @@
 <template>
+
   <div class="chat">
     
     <div class="top">
@@ -28,7 +29,7 @@
         
         <div class="text">
           
-          <img style="cursor:pointer" @click="download" :src="message.content" alt="">
+          <img  @click="downloadFile(message.content)" style="cursor:pointer"  :src="message.content" alt="">
 
           <p>{{message.messagecontent}}</p>
           <span @click="downloadFile(message.content)"  style="display:flex;align-items:end;gap:5px" class="time">{{formatTimeAgo(message.senttime)}} <span style="cursor:pointer;display:flex;align-items:end;gap:5px" class="time">Image<img style="height:20px;width:20px;border-radius:0" src="../../assets/download.png" alt=""><br>
@@ -44,7 +45,7 @@
         <img v-if="message.author!== currentuser" :src="message.profileImageUrl" alt="">
 
         <div class="text">
-          <p>{{message.content}}</p>
+          <pre>{{message.content}}</pre>
                                <span class="time">{{formatTimeAgo(message.senttime)}}</span>
 
         </div>
@@ -54,7 +55,7 @@
        <div v-if="message.type==='file'" :class="{ 'message': message.author!== currentuser, 'message_own': message.author=== currentuser ,'file': true,'photo': false}">
         <img v-if="message.author!== currentuser" :src="message.profileImageUrl" alt="">
         <div @click="download" style="cursor:pointer" class="text">
-          <p>{{message.filename}}</p>
+          <pre>{{message.filename}}</pre>
                      <span class="time">{{formatTimeAgo(message.senttime)}}</span>
 
         </div>
@@ -98,7 +99,7 @@
 
       </div>
 
-      <textarea v-model="text" type="text" placeholder="Type a message ..."></textarea>
+      <textarea ref="myInput" v-model="text" type="text" placeholder="Type a message ..."></textarea>
 
       <div class="emoji">
           <i @click="toggleEmojiPicker" class="bi bi-emoji-smile-fill" style="cursor:pointer;margin-right:10px;font-size: 1.8rem;"></i>
@@ -138,10 +139,11 @@
       <template #modal-title>
         Detail
       </template>
-      <detail />
+      <detail :data="chatdata" :mess="messages" />
     </b-modal>
 
-    <a download="pp.txt" style="display:hidden" ref="download"></a>
+
+
 </template>
 
 <script>
@@ -158,7 +160,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 import { auth, firestore, storage } from '@/firebase/Config';
 import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
-import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion, Timestamp,addDoc} from 'firebase/firestore';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
 
 
@@ -169,9 +171,12 @@ import 'toastify-js/src/toastify.css';
 
 export default {
   components:{detail,FilePreview,loadingPage},
-  props:['messages','chatdata'],
+  props:['chatid'],
   data() {
     return {
+      chatdata:{id:null},
+      listener:null,
+      messages:[],
       currentuser:auth.currentUser.uid,
       text: "",
       picker: new EmojiButton(),
@@ -179,10 +184,15 @@ export default {
       selectedFiles: [],
       maxFileSize: 10 * 1024 * 1024,
       loading:false,
-      progr:0
+      progr:0,
 
 
     };
+  },async beforeUnmount(){
+    if(this.listener !== null){
+        await this.listener()
+      }
+
   },
   mounted() {
     const targetElement = this.$refs.targetscroll;
@@ -194,14 +204,10 @@ export default {
       }
 
 
-
-
     this.picker.on('emoji', emoji => {
       this.text += emoji.emoji;
     });
   },
-
-
   methods: {
     toggleEmojiPicker(event) {
       this.picker.togglePicker(event.target);
@@ -258,7 +264,8 @@ export default {
         position: "right", // `left`, `center` or `right`
         backgroundColor: "red",
       }).showToast();
-    },async send(){
+    },
+    async send(){
 
       if(this.text.trim()==='' && this.selectedFiles.length === 0){
         return
@@ -272,16 +279,18 @@ export default {
       const messagesCollectionRef = collection(ChatDocRef, 'message');
 
       if(this.selectedFiles.length === 0){
+
             await addDoc(messagesCollectionRef,{
-            author:this.currentuser,
+            author:auth.currentUser.uid,
             type:'text',
             senttime:Timestamp.now(),
             filename:'',
             content:this.text,
-            unread:true
+            unread:true,
+            readby:[]
             });
 
-            this.text = '';
+          this.text = '';
 
           this.scrolllll()
           
@@ -301,25 +310,33 @@ export default {
     const messageType = type === 'image' ? 'image' : 'file';
 
     await addDoc(messagesCollectionRef, {
-      author: this.currentuser,
+      author: auth.currentUser.uid,
       type: messageType,
-      senttime: Timestamp.now(),
+      senttime:Timestamp.now(),
       filename: file.name,
       content: profileImageUrl,
       unread: true,
-      messagecontent: this.text
+      messagecontent: this.text,
+      readby:[]
+
     });
     this.progr += parseInt(100/this.selectedFiles.length)
   });
 
-  // Wait for all promises to resolve
-  await Promise.all(promises);
-    this.text = '';
-  this.loading = false
-  this.progr = 0;
-              this.selectedFiles = [];
+        // Wait for all promises to resolve
+        await Promise.all(promises);
+          this.text = '';
+        this.loading = false
+        this.progr = 100;
+        this.selectedFiles = [];
 
-    this.scrolllll()
+
+          if (this.$refs.myInput) {
+              this.$refs.myInput.focus();
+          } 
+       
+          this.scrolllll()
+          
 
 
 
@@ -332,7 +349,8 @@ export default {
 
 
 
-    },scrolllll(){
+    },
+    scrolllll(){
       const targetElement = this.$refs.targetscroll;
 
       // Check if the element exists
@@ -343,20 +361,256 @@ export default {
 
     },
     downloadFile(url) {
-      const targetElement = this.$refs.download;
-      targetElement.href = url;
-      targetElement.click()
-  },formatTimeAgo(timestamp) {
-      const sentTime = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
-      return formatDistanceToNow(sentTime, { addSuffix: true });// Using dayjs library to format "time ago"
-    }
-    ,updatetime(){
+       window.open(url, '_blank');
+      
+    },
+    formatTimeAgo(timestamp) {
+        const sentTime = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+        return formatDistanceToNow(sentTime, { addSuffix: true });// Using dayjs library to format "time ago"
+      }
+    ,async updatetime(){
       /// add read_by 
+    },
+    async fetchmessages(){
+      if(this.listener !== null){
+        await this.listener()
+      }
+      this.messages = []
+        
+        if (this.chatdata.id !== null){
+      
+                    
+                const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+                const messagesCollectionRef = collection(ChatDocRef, 'message');
+                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'asc'));
+
+
+                try{
+                  
+                this.listener = await onSnapshot(messagesQuery, async (snapshot) => {
+                        
+                        const newMessages = [];
+
+                          // Collect all asynchronous tasks
+                          const asyncTasks = snapshot.docChanges().map(async change => {
+
+                              if (change.type === "added") {
+
+                                  const message = change.doc.data();
+                                  message.id = change.doc.id;
+                                if(message.senttime !== null){
+                                        if (message.author !== auth.currentUser.uid) {
+                                            const userDocRef = doc(firestore, 'users', message.author);
+                                            const userDoc = await getDoc(userDocRef);
+                                            const temp = {...userDoc.data()};
+                                            message.profileImageUrl = temp.profileImageUrl;
+                                        }
+
+                                        if(this.chatdata.type == 'group'){
+
+                                          if(message.author !== auth.currentUser.uid){
+                                           
+                                            if(message.readby && !message.readby.includes(auth.currentUser.uid)){
+                                                  
+                                          const ooooo = doc(firestore, "chats", this.chatdata.id);
+                                          const pmoinoanc = collection(ooooo, 'message');
+                                          const pppppp = doc(pmoinoanc,message.id);
+                                          
+                                          await updateDoc(pppppp, {
+                                            readby: arrayUnion(auth.currentUser.uid)
+                                          });
+
+
+                                            }
+                                        
+
+                                          }
+
+
+
+
+                                        }
+                                        else{
+
+                                          if(message.author !== auth.currentUser.uid){
+
+                                          const oooooo = doc(firestore, "chats", this.chatdata.id);
+                                          const ooounin = collection(oooooo, 'message');
+                                          const ienoeunfwf = doc(ooounin,message.id);
+                                        
+
+                                          
+                                          await updateDoc(ienoeunfwf, {
+                                            unread:false
+                                          });
+
+                                          }
+
+
+
+                                        }
+                                        newMessages.push(message);
+                                  }
+                              }
+
+                          });
+
+                  // Wait for all asynchronous tasks to complete
+                  await Promise.all(asyncTasks);
+
+                  // Append new messages to the existing messages array
+                  console.log([...this.messages])
+                  this.messages = [...this.messages, ...newMessages];
+
+                  // Sort the messages based on senttime
+                  this.messages = [...this.messages].sort((a, b) => a.senttime.seconds - b.senttime.seconds);
+
+                  // Scroll to the latest message
+                  this.$nextTick(() => {
+                      this.scrolllll();
+
+                      if (this.$refs.myInput) {
+                          this.$refs.myInput.focus();
+                      } 
+       
+                  });
+
+                      
+
+                    });
+                
+
+                }catch(error){
+                    Toastify({
+                        text: "Something went Wrong 1",
+                        duration: 3000,
+                        close: true,
+                        gravity: "bottom", // `top` or `bottom`
+                        position: "right", // `left`, `center` or `right`
+                        backgroundColor: "red",
+                      }).showToast();
+                  this.$router.push('/');
+
+
+                }
+
+
+
+
+
+}
+
+    },
+    async fetchchat(){
+      this.loading = true
+
+      if(this.chatid){
+
+        try{
+
+
+          const ChatDocRef = doc(firestore, "chats", this.chatid);
+          onSnapshot(ChatDocRef, async (docSnapshot) => {
+
+          if (docSnapshot.exists()) {
+            const chatData = docSnapshot.data();
+            chatData.id = docSnapshot.id;
+
+
+          if (chatData.type === 'discussion'){
+                  
+              let friend;
+              let friendid;
+              if (chatData.senders[0] === auth.currentUser.uid){
+                  friendid = chatData.senders[1];
+              }
+              else{
+                  friendid = chatData.senders[0];
+              }
+
+
+              const userDocRef = doc(firestore, 'users',friendid);
+              const userDoc = await getDoc(userDocRef);
+
+              if (userDoc.exists()) {
+                friend = {...userDoc.data(),id:userDoc.id};         
+              } else {
+                Toastify({
+                  text: "Something went Wrong 2 ",
+                  duration: 3000,
+                  close: true,
+                  gravity: "bottom", // `top` or `bottom`
+                  position: "right", // `left`, `center` or `right`
+                  backgroundColor: "red",
+                }).showToast();
+            
+              }
+              
+            chatData.friend = friend;
+            this.chatdata = chatData;
+            this.listener = this.fetchmessages()
+
+            this.loading = false
+
+
+
+                            
+
+
+
+          }else{
+            this.chatdata = chatData;
+            this.listener = this.fetchmessages()
+            this.loading = false
+          }
+
+
+
+
+
+
+          }else{
+        
+          this.$router.push('/')
+          
+          
+          }
+        
+
+          })
+            
+
+        }
+        catch(error){
+          Toastify({
+                  text: "Something went Wrong 4",
+                  duration: 3000,
+                  close: true,
+                  gravity: "bottom", // `top` or `bottom`
+                  position: "right", // `left`, `center` or `right`
+                  backgroundColor: "red",
+                }).showToast();
+            this.$router.push('/');
+        }
+
+      }
+
+
+            
+
+
+    }
+  },
+  watch: {
+    'chatid': {
+      handler: 'fetchchat',
+      immediate: true
     }
   }
     
   
 };
+
 </script>
 
 <style scoped>
@@ -493,7 +747,7 @@ transition: background-color 0.1s ease; /* Smooth transition */
   align-self: flex-end;
   margin-bottom:17px ;
 }
-.message_own .text p{
+.message_own .text pre{
   background-color: #5183fe;
   color: white;
   padding: 5px;
@@ -501,7 +755,7 @@ transition: background-color 0.1s ease; /* Smooth transition */
   color: white;
    margin-bottom:0 ;
 }
- .text p{
+ .text pre{
   background-color: rgba(17, 25, 40, 0.3);
   padding: 10px;
   border-radius: 5px;

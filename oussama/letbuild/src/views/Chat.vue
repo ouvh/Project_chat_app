@@ -12,9 +12,7 @@
       <b-row style="display:flex;flex-direction:column">
         
       
-      <b-col v-b-tooltip.hover title="Show contact details and shared files" id="image" style="cursor:pointer;flex-grow:0;margin-right:15px;margin-left:20px;margin-top:20px">
-            <i @click="showDetail = true" class="bi bi-image" style=" font-size: 1.8rem;"></i>
-      </b-col>
+    
       <b-col v-b-tooltip.hover title="show contacts list" style="cursor:pointer;margin-right:15px;margin-left:20px;margin-top:20px">
             <i @click="showList = true"  class="bi bi-chat-fill" style=" font-size: 1.8rem;"></i>
       </b-col>
@@ -30,14 +28,13 @@
         <list :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username" />
       </b-col>
       <b-col cols="12" xl="9" class="ooo">    
-        <chat :chatdata="chatdata" :messages="messages" />
+        <chat :chatid="chatid"/>
 
       </b-col>
      
     </b-row>
 
     <loadingPage v-if="loading" :progress="progr"/>
-
 
 
     <!-- Sliding List Modal -->
@@ -53,26 +50,10 @@
       <template #modal-title>
         List
       </template>
-      <listmodal :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username"  />
+      <listmodal  :chats="chats" :profileimagelink="user.profileImageUrl" :username="user.username"  />
     </b-modal>
 
-    <!-- Sliding Detail Modal -->
-    <b-modal
-      id="detail-modal"
-      size="lg"
-      hide-footer
-      v-model="showDetail"
-      @hidden="resetModal"
-      centered
-      class="slide-in"
-    >
-      <template #modal-title>
-        Detail
-      </template>
-      <detail />
-    </b-modal>
- 
-  
+   
 </template>
 
 <script>
@@ -104,13 +85,12 @@ export default {
     return {
       user:{username:'error',profileImageUrl:null,chats:[]},
       chats:[],
-      messages:[],
       loading:true,
       showList: false,
       showDetail: false,
       doneloading:true,
       progr:0,
-      chatdata:{type:null},
+      chatdata:{type:null,id:null},
     };
   },
   computed: {
@@ -192,72 +172,82 @@ export default {
                 }
                 const chatDocRef = doc(firestore, 'chats', chat.id);
                 const messagesCollectionRef = collection(chatDocRef, 'message');
-                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'), limit(1));
+                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'));
 
                 onSnapshot(messagesQuery, async (snapshot) => {
+            
 
                               const querySnapshot = snapshot;
                               let content;
                               let time;
                               let unreadmessages;
 
-                              const unreadMessagesQuery = query(messagesCollectionRef, where('unread', '==', true),where('author','!=',auth.currentUser.uid));
-                              const temp = await getCountFromServer(unreadMessagesQuery);
-                              unreadmessages = temp.data().count;
-
+                             
 
 
 
                   
 
                               if (chat.type === 'discussion'){
+                                const unreadMessagesQuery = query(messagesCollectionRef, where('unread', '==', true),where('author','!=',auth.currentUser.uid));
+                                const temp = await getCountFromServer(unreadMessagesQuery);
+                                unreadmessages = temp.data().count;
 
-                                  const userDocRef = doc(firestore, 'users',friendid);
-                                  const userDoc = await getDoc(userDocRef);
+                                        const userDocRef = doc(firestore, 'users',friendid);
+                                        const userDoc = await getDoc(userDocRef);
 
-                                if (userDoc.exists()) {
-                                  friend = userDoc.data();          
-                                } else {
-                                  Toastify({
-                                    text: "Something went Wrong",
-                                    duration: 3000,
-                                    close: true,
-                                    gravity: "bottom", // `top` or `bottom`
-                                    position: "right", // `left`, `center` or `right`
-                                    backgroundColor: "red",
-                                  }).showToast();
-                              
-                                }
+                                            if (userDoc.exists()) {
+                                              friend = userDoc.data();          
+                                            } else {
+                                              Toastify({
+                                                text: "Something went Wrong",
+                                                duration: 3000,
+                                                close: true,
+                                                gravity: "bottom", // `top` or `bottom`
+                                                position: "right", // `left`, `center` or `right`
+                                                backgroundColor: "red",
+                                              }).showToast();
+                                          
+                                            }
 
-                                if (!querySnapshot.empty) {
-                                // There is at least one message in the subcollection
-                                const lastMessageDoc = querySnapshot.docs[0];
-                                const lastMessageData = lastMessageDoc.data();
-                                if (lastMessageData.type === 'text'){
-                                  content = lastMessageData.content;
-                                  time = lastMessageData.senttime;
-                                }
-                                else if(lastMessageData.type === 'image'){
-                                  content = 'Image Sent';
-                                  time = lastMessageData.senttime;
+                                      if (!querySnapshot.empty) {
+                                      // There is at least one message in the subcollection
+                                      const lastMessageDoc = querySnapshot.docs[0];
+                                      const lastMessageData = lastMessageDoc.data();
+                                      if (lastMessageData.type === 'text'){
+                                        content = lastMessageData.content;
+                                        time = lastMessageData.senttime;
+                                      }
+                                      else if(lastMessageData.type === 'image'){
+                                        content = 'Image Sent';
+                                        time = lastMessageData.senttime;
 
-                                }
-                                else{
-                                  content = 'document Sent';
-                                  time = lastMessageData.senttime;
+                                      }
+                                      else{
+                                        content = 'document Sent';
+                                        time = lastMessageData.senttime;
 
-                                }
-                                
-                              } else {
-                                  content = 'Invitation Accepted';
-                                  time = chat.createdat;
+                                      }
+                                      
+                                    } else {
+                                        content = 'Invitation Accepted';
+                                        time = chat.createdat;
+                                    }
+
+
+                                      this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time,unreadmessages})
+                                        
+
                               }
+                              else{
+                                  const unreadMessagesQuery = query(messagesCollectionRef, where('readby', 'array-contains', auth.currentUser.uid),where('author','!=',auth.currentUser.uid));
+                                  const allMessagesQuery = query(messagesCollectionRef,where('author','!=',auth.currentUser.uid));
 
+                                  const temp = await getCountFromServer(unreadMessagesQuery);
+                                  const temp2 = await getCountFromServer(allMessagesQuery);
+                                  unreadmessages = temp2.data().count -  temp.data().count;
+                                  console.log(unreadmessages)
 
-                                this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time,unreadmessages})
-                                  
-
-                              }else{
                         
                                
 
@@ -285,6 +275,10 @@ export default {
                                   time = chat.createdat;
                                 }
 
+
+
+
+
                                 this.updater({...chat,time,content,unreadmessages})
                               }
 
@@ -306,8 +300,7 @@ export default {
         }
 
 
-    }
-    ,
+    },
     updater(data){
       const index = this.chats.findIndex(obj => obj.id === data.id);
 
@@ -320,150 +313,6 @@ export default {
       this.chats = [...this.chats].sort((a, b) => b.time.seconds - a.time.seconds);
 
 
-    },
-    async fetchchat(){
-      this.loading = true
-      this.messages = []
-      try{
-          const ChatDocRef = doc(firestore, "chats", this.chatid);
-          const messagesCollectionRef = collection(ChatDocRef, 'message');
-          const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'asc'));
-          
-        onSnapshot(ChatDocRef, async (docSnapshot) => {
-
-        if (docSnapshot.exists()) {
-          const chatData = docSnapshot.data();
-          chatData.id = docSnapshot.id;
-
-         
-      
-
-                  
-
-        if (chatData.type === 'discussion'){
-                
-            let friend;
-            let friendid;
-            if (chatData.senders[0] === auth.currentUser.uid){
-                friendid = chatData.senders[1];
-            }
-            else{
-                friendid = chatData.senders[0];
-            }
-
-
-            const userDocRef = doc(firestore, 'users',friendid);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-              friend = {...userDoc.data(),id:userDoc.id};         
-            } else {
-              Toastify({
-                text: "Something went Wrong",
-                duration: 3000,
-                close: true,
-                gravity: "bottom", // `top` or `bottom`
-                position: "right", // `left`, `center` or `right`
-                backgroundColor: "red",
-              }).showToast();
-          
-            }
-            
-          chatData.friend = friend;
-          this.chatdata = chatData;
-          this.loading = false
-
-
-
-                          
-
-
-
-        }else{
-          this.chatdata = chatData;
-          this.loading = false
-
-
-
-        }
-
-
-
-
-
-
-        }else{
-        Toastify({
-                text: "Something went Wrong",
-                duration: 3000,
-                close: true,
-                gravity: "bottom",
-                position: "right",
-                backgroundColor: "red",
-        }).showToast();
-        this.$router.push('/')
-        
-        
-        }
-        
-
-
-        
-
-        })
-          
-
-
-       onSnapshot(messagesQuery, (snapshot) => {
-          console.log("hi")
-
-          snapshot.docChanges().forEach(async change => {
-            if (change.type === "added") {
-              const message = change.doc.data();
-              message.id = change.doc.id;
-            if(message.author !== auth.currentUser.uid){
-
-
-                const userDocRef = doc(firestore, 'users',message.author);
-              const userDoc = await getDoc(userDocRef);
-              const temp = {...userDoc.data()}
-              message.profileImageUrl =  temp.profileImageUrl;
-
-              this.messages.push(message)
-              this.messages = [...this.messages].sort((a, b) => a.senttime.seconds - b.senttime.seconds);
-
-
-            }
-            else{
-                this.messages.push(message)
-
-            }
-          
-            }
-          });
-
-
-      });
-
-
-
-      }catch(error){
-         Toastify({
-                text: "Something went Wrong",
-                duration: 3000,
-                close: true,
-                gravity: "bottom", // `top` or `bottom`
-                position: "right", // `left`, `center` or `right`
-                backgroundColor: "red",
-              }).showToast();
-          this.$router.push('/');
-      }
-
-    }
-  },watch: {
-    'chatid': {
-      handler: 'fetchchat',
-      immediate: true
     }
   }
 

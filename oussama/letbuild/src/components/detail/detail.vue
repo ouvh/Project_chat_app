@@ -1,11 +1,14 @@
 <template>
-
-    <div class="detail">
+    <div v-if="chatdata !== null && chatdata.id !== null" class="detail">
         <div class="user" style="overflow:hidden">
 
-            <img src="../../../public/assets/avatar.png" alt="">
-            <h2>Jane Doe</h2>
-            <p>Lorem ip neoifnwoinoinoinoinoinoinoinsumneoifnwoinoinoinoin dolor sit amet.</p>
+             <img v-if="chatdata.type==='discussion'" :src="chatdata.friend.profileImageUrl" alt="">
+            <img v-if="chatdata.type==='group'" :src="chatdata.groupicon" alt="">
+
+            <h2 v-if="chatdata.type==='discussion'">{{chatdata.friend.username}}</h2>
+            <h2 v-if="chatdata.type==='group'">{{chatdata.groupname}}</h2>
+
+            <p v-if="chatdata.type==='discussion'">{{chatdata.friend.description}}</p>
         </div>
 
 
@@ -104,75 +107,20 @@
                                     <div class="photos">
 
 
-                    <div class="photoitem">
+                    <div :key="index" v-for="image,index in filteredimages" class="photoitem">
 
                         <div class="photodetail">
-                            <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2iwefoimwefoimweofmweofimweofimweofimwefimeofimweofimwefimeofimweofimwefimeofimweofimwefimeofimweofimwefimweofmweofmweofimweofimomoiwmefoiwme024_2.png</span>
+                            <img :src="image.content" alt="">
+                            <span>{{image.filename}}</span>
 
                         </div>
 
                         
-                        <img class="icon" src="../../../public/assets/download.png" alt="">
+                        <img @click="downloadFile(image.content)" class="icon" src="../../../public/assets/download.png" alt="">
 
                     </div>
                     
-                    <div class="photoitem">
-
-                        <div class="photodetail">
-                            <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2024_2.png</span>
-
-                        </div>
-
-                        
-                        <img class="icon" src="../../../public/assets/download.png" alt="">
-
-                    </div>
-
-                    
-                    <div class="photoitem">
-
-                        <div class="photodetail">
-                            <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2024_2.png</span>
-
-                        </div>
-
-                        
-                        <img class="icon" src="../../../public/assets/download.png" alt="">
-
-                    </div>
-
-
-                    <div class="photoitem">
-
-                        <div class="photodetail">
-                            <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2024_2.png</span>
-
-                        </div>
-
-                        
-                        <img class="icon" src="../../../public/assets/download.png" alt="">
-
-                    </div>
-
-
-                    <div class="photoitem">
-
-                        <div class="photodetail">
-                            <img src="https://th.bing.com/th/id/OIP.JPllmkWBqX_ALvUO_DAnZwHaE7?rs=1&pid=ImgDetMain" alt="">
-                            <span>photo_2024_2.png</span>
-
-                        </div>
-
-                        
-                        <img class="icon" src="../../../public/assets/download.png" alt="">
-
-                    </div>
-
-
+                   
 
 
 
@@ -209,21 +157,26 @@
                 
                                 <b-collapse id="detail-files" is-nav class="items ">
                                     
-                                    <div class="photos">
+                                    <div :key="index" v-for="file,index in filteredfiles" class="photos">
                                         <div class="photoitem">
                                             <div class="photodetail">
                                                 <img src="../../assets/file.png" alt="">
-                                                <span>photo_2iwefoimiwme024_2.png</span>
+                                                <span>f{{file.filename}}</span>
                                             </div>
                                         
-                                            <img class="icon" src="../../../public/assets/download.png" alt="">
+                                            <img  @click="downloadFile(file.content)"  class="icon" src="../../../public/assets/download.png" alt="">
                                         </div>
                                     </div>
+
+
+
                                     
                                 </b-collapse>
             </div>
 
-            <button class="block-button">Block User</button>
+            <button v-if="this.chatdata.type !== 'group'" @click="removefriend" class="block-button">Remove User</button>
+            <button v-if="this.chatdata.type === 'group'" @click="quitGroup" class="block-button">Quit Group</button>
+
 
 
 
@@ -231,10 +184,337 @@
         </div>
     </div>
 
+        <loadingPage v-if="loading" :progress="progr"/>
+
 </template>
 
 <script>
+
+import { auth, firestore, storage } from '@/firebase/Config';
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion, Timestamp,addDoc,deleteDoc} from 'firebase/firestore';
+import { ref, uploadBytes,listAll ,getDownloadURL ,deleteObject} from 'firebase/storage';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
+import loadingPage from '@/components/layout/loadingPage.vue';
+
+
+
 export default {
+    props:['data','mess'],
+    components:{loadingPage},
+    data(){
+        return ({
+            chatdata:{id:null},
+            messages:[],
+            loading:false,
+            progr:0
+        })
+    },
+    methods:{
+        fetch(){
+            if(this.data){
+                    if(this.data.id !== null){
+                this.chatdata = {...this.data}
+                this.messages = this.mess
+                }
+            }
+        },
+        async removefriend(){
+            try{
+                    this.loading = true
+                    this.progr = 5
+                    const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+                    const messagesCollectionRef = collection(ChatDocRef, 'message');
+
+                    const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+                    const friendDocRef = doc(firestore, "users", this.chatdata.friend.id);
+
+                  
+
+
+
+                    await updateDoc(friendDocRef, {
+                        friends: arrayRemove(auth.currentUser.uid)
+                    });
+
+                     await updateDoc(UserDocRef, {
+                        friends: arrayRemove(this.chatdata.friend.id)
+                    });
+
+                    await updateDoc(friendDocRef, {
+                        chats: arrayRemove(this.chatdata.id)
+                    });
+
+                     await updateDoc(UserDocRef, {
+                        chats: arrayRemove(this.chatdata.id)
+                    });
+
+
+                    this.progr = 50;
+
+
+
+                      if([...this.filteredfiles,...this.filteredimages].length !== 0){
+
+
+                            const dirRef = ref(storage, `chats/${this.chatdata.id}/`);
+
+                            const listResults = await listAll(dirRef);
+
+                            // Delete all files in the directory
+                            const deletePromises = listResults.items.map((itemRef) => deleteObject(itemRef));
+                            await Promise.all(deletePromises);
+                    
+                    
+                    }
+
+
+                    
+                    this.progr = 80;
+     
+
+
+
+
+
+                    const subcollectionSnapshot = await getDocs(messagesCollectionRef);
+
+                    const deletePromises = subcollectionSnapshot.docs.map((docSnapshot) => deleteDoc(docSnapshot.ref));
+                    await Promise.all(deletePromises);
+
+
+                    await deleteDoc(ChatDocRef);
+
+                    this.progr = 90;
+
+
+                    this.$router.push('/')
+                    Toastify({
+                    text: "Friend Removed from your list",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "orange",
+                    }).showToast();
+
+
+
+
+
+
+
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+            }
+
+
+        
+        }
+        ,downloadFile(url) {
+       window.open(url, '_blank');
+      
+    },async quitGroup(){
+          try{
+
+                    if(this.chatdata.senders.length ===1){
+                        this.loading = true
+                        this.progr = 20
+
+
+
+                        const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+                        await updateDoc(UserDocRef, {
+                        chats: arrayRemove(this.chatdata.id)
+                        });
+
+                        this.progr = 50;
+                        
+                      if([...this.filteredfiles,...this.filteredimages].length !== 0){
+
+
+                            const dirRef = ref(storage, `chats/${this.chatdata.id}/`);
+
+                            const listResults = await listAll(dirRef);
+
+                            // Delete all files in the directory
+                            const deletePromises = listResults.items.map((itemRef) => deleteObject(itemRef));
+                            await Promise.all(deletePromises);
+                    
+                    
+                    }
+
+                             const ddirRef = ref(storage, `group/${this.chatdata.id}/`);
+
+                            const llistResults = await listAll(ddirRef);
+
+                            // Delete all files in the directory
+                            const ddeletePromises = llistResults.items.map((itemRef) => deleteObject(itemRef));
+                            await Promise.all(ddeletePromises);
+                    
+                    
+                    
+                    
+
+
+
+                    
+                    this.progr = 80;
+     
+
+                    const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+                    const messagesCollectionRef = collection(ChatDocRef, 'message');
+
+
+
+                    const subcollectionSnapshot = await getDocs(messagesCollectionRef);
+
+                    const deletePromises = subcollectionSnapshot.docs.map((docSnapshot) => deleteDoc(docSnapshot.ref));
+                    await Promise.all(deletePromises);
+
+
+                    await deleteDoc(ChatDocRef);
+
+                    this.progr = 90;
+
+
+                    this.$router.push('/')
+                    Toastify({
+                    text: "Friend Removed from your list",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "orange",
+                    }).showToast();
+
+
+
+
+
+
+
+
+                    }
+                    else{
+                    this.loading = true
+                    this.progr = 5
+                    const cChatDocRef = doc(firestore, "chats", this.chatdata.id);
+                    const mmessagesCollectionRef = collection(cChatDocRef, 'message');
+                    const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+                    const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+
+
+                    const temp = await getDoc(UserDocRef);
+                    const i = temp.data().username
+
+
+                    await addDoc(mmessagesCollectionRef,{
+                    author:auth.currentUser.uid,
+                    type:'text',
+                    senttime:Timestamp.now(),
+                    filename:'',
+                    content:`${i} has left the Group`,
+                    unread:true,
+                    readby:[]
+                    });
+
+
+
+                    
+                    await updateDoc(ChatDocRef, {
+                        senders: arrayRemove(auth.currentUser.uid)
+                    });
+
+                    await updateDoc(UserDocRef, {
+                        chats: arrayRemove(this.chatdata.id)
+                    });
+                     this.progr = 90;
+
+
+                    this.$router.push('/')
+                    Toastify({
+                    text: "Friend Removed from your list",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "orange",
+                    }).showToast();
+
+
+
+                    }
+
+
+                  
+
+
+
+
+
+
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+            }
+
+
+    }
+
+    },
+    
+  watch: {
+    'data': {
+      handler: 'fetch',
+      immediate: true
+    },
+    'mess':{
+        handler:'fetch',
+        immediate:true
+    }
+  },computed:{
+    filteredfiles() {
+      // Check if data.id is not null and filter messages based on type
+      if (this.data.id !== null) {
+        // Example filter: Only include messages with type 'image' or 'file'
+        return this.messages.filter(message => message.type === 'file');
+      }
+      return [];
+    },
+    filteredimages() {
+      // Check if data.id is not null and filter messages based on type
+      if (this.data.id !== null) {
+        // Example filter: Only include messages with type 'image' or 'file'
+        return this.messages.filter(message => message.type === 'image' );
+      }
+      return [];
+    },
+
+
+  }
+
 
 }
 </script>

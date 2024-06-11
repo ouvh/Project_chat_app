@@ -18,7 +18,10 @@
         </b-navbar>
         </div>
           
-        <b-avatar :src="profileimagelink" size="md"></b-avatar>
+        <div class="avatar-container">
+          <b-avatar :src="profileimagelink" size="md"></b-avatar>
+          <span v-if="numberofinvitations !== 0" class="number-indicator" @click="this.$router.push('/invitations')">{{numberofinvitations}}</span>
+        </div>
         <h5  class="m-0 user-name">{{username}}</h5>
         
 
@@ -37,6 +40,8 @@
         <b-navbar-nav  class="navbar">
           <b-nav-item  class="items"  to="/">Home</b-nav-item>
           <b-nav-item class="items"  to="/profile">Profile</b-nav-item>
+          <b-nav-item class="items"  to="/invitations">invitations</b-nav-item>
+
           <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="logout">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -48,10 +53,18 @@
 
 <script>
 import { BAvatar, BDropdown, BDropdownItem } from 'bootstrap-vue-3';
-import { auth } from '@/firebase/Config';
 import { signOut } from 'firebase/auth';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+
+
+
+import { auth, firestore, storage } from '@/firebase/Config';
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
+
+
 
 export default {
   props:['username','profileimagelink'],
@@ -62,8 +75,6 @@ export default {
   },methods:{
     async logout(){
       await signOut(auth);
-
-
       this.$router.push('/login')
        Toastify({
             text: "Logout Successfully",
@@ -73,12 +84,53 @@ export default {
             position: "right", // `left`, `center` or `right`
             backgroundColor: "red",
           }).showToast();
+    },
+    async fetch(){
+
+      const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+
+      onSnapshot(userDocRef,(doc)=>{
+         const temp = {...doc.data()};
+          this.numberofinvitations = temp.invitations.length;
+
+
+      })
+      
+     
     }
+  },
+  created(){
+    this.fetch()
+  },
+  data(){
+    return ({
+      numberofinvitations:0
+    })
   }
 };
 </script>
 
 <style scoped>
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.number-indicator {
+  cursor:pointer;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
 .userinfo {
   border-bottom: 1px solid #dee2e6;
 }

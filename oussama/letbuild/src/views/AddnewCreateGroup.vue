@@ -416,8 +416,19 @@ export default {
         backgroundColor: "red",
       }).showToast();
         return;
-
       }
+      if(this.groupname.trim() === ''){
+        Toastify({
+        text: "Choose a name for the group",
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "red",
+      }).showToast();
+        return;
+      }
+     
       
         
       try {
