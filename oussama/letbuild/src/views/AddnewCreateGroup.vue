@@ -439,7 +439,7 @@ export default {
 
         const members = this.all.filter(user=>[...this.groupMember].includes(user.username));
 
-        const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[auth.currentUser.uid],type:'group',createdat:Timestamp.now(),groupname:this.groupname,sentinvitations:[],groupicon:''});
+        const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[auth.currentUser.uid],type:'group',createdat:Timestamp.now(),groupname:this.groupname,sentinvitations:[],groupicon:'',currentId:0});
 
         this.progr = 50
 

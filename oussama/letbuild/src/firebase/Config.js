@@ -8,12 +8,12 @@ import { getStorage } from 'firebase/storage';
 
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDps38ORUR4lYX-_42j5g4KzHI3p0EWecM",
-    authDomain: "chatflow-cc.firebaseapp.com",
-    projectId: "chatflow-cc",
-    storageBucket: "chatflow-cc.appspot.com",
-    messagingSenderId: "285558316961",
-    appId: "1:285558316961:web:eebacb9e2f8b53b4e2b5e0"
+    apiKey: "AIzaSyA_1ncE7qDEhj5yH7NQzl6M8Tw2nCOwU5E",
+    authDomain: "chatflow-c.firebaseapp.com",
+    projectId: "chatflow-c",
+    storageBucket: "chatflow-c.appspot.com",
+    messagingSenderId: "91815708096",
+    appId: "1:91815708096:web:05f9590691f84891bdb425"
   };
 
   

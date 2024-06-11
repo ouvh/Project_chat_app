@@ -214,6 +214,7 @@
           invitations:[],
           sentinvitations:[],
           friends:[],
+          status:true,
           createdat:Timestamp.now()
         });
 

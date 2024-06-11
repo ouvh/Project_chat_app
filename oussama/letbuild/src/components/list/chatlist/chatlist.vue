@@ -32,11 +32,18 @@
       </div>
     </div>
 <div class="ppppppppppppp">
-      <div v-for="(chat, index) in filteredChats" :key="index" class="item ">
-        <img v-if="chat.type === 'discussion'" :src="chat.friendpic" alt="" />
-        <img v-if="chat.type === 'group'" :src="chat.groupicon" alt="" />
+      <div @click="this.$router.push(`/chat/${chat.id}`)" v-for="(chat, index) in filteredChats" :key="index" class="item ">
+
+      <div class="profile-container">
         
-        <div @click="this.$router.push(`/chat/${chat.id}`)" class="texts" style="overflow:hidden">
+          <img v-if="chat.type === 'discussion'" :src="chat.friendpic" alt="" />
+          <img v-if="chat.type === 'group'" :src="chat.groupicon" alt="" />
+          <div v-if="chat.type==='discussion'"  :class="{'online-indicator':chat.status,'offline-indicator':!chat.status}"></div> <!-- Online status indicator -->
+
+      </div>
+
+
+        <div  class="texts" style="overflow:hidden">
           <span v-if="chat.type === 'discussion'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             {{ chat.friendusername }}
           </span>
@@ -51,7 +58,6 @@
         </div>
         
         <div v-if="chat.unreadmessages !== 0" style="flex:1;display:flex;align-items:right;justify-content:right"><div class="indicator">{{chat.unreadmessages}}</div></div>
-
       </div>
       
 
@@ -77,7 +83,6 @@ export default {
   },
   computed: {
     filteredChats() {
-      console.log(this.chats)
       if (!this.searchQuery) {
         return this.chats;
       }
@@ -97,6 +102,31 @@ export default {
 </script>
 
 <style scoped>
+.profile-container {
+    position: relative;
+    display: inline-block;
+}
+.online-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 80%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: rgb(21, 223, 21);
+    border-radius: 50%; /* To make it a circle */
+}
+.offline-indicator{
+  position: absolute;
+    bottom: 0;
+    left: 80%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: rgb(103, 117, 103);
+    border-radius: 50%; /* To make it a circle */
+
+}
 
 .oooooooooo {
   cursor: pointer;

@@ -210,7 +210,7 @@ export default {
               invitations: arrayRemove({id:invitation.id,type:invitation.type})
             });
 
-            const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[invitation.id,auth.currentUser.uid],type:'discussion',createdat:Timestamp.now()});
+            const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[invitation.id,auth.currentUser.uid],type:'discussion',createdat:Timestamp.now(),currentId:0});
 
             await updateDoc(UserDocRef, {
               chats: arrayUnion(chatDocRef.id)

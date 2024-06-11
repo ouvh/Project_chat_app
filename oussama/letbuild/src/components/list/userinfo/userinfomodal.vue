@@ -39,23 +39,58 @@
         <b-navbar-nav  class="navbar">
           <b-nav-item  class="items"  to="/">Home</b-nav-item>
           <b-nav-item class="items"  to="/profile">Profile</b-nav-item>
-          <b-nav-item class="items"  to="/invitations">invitations</b-nav-item>
+          <b-nav-item class="items"  to="/invitations">Invitations</b-nav-item>
 
-          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="logout">Logout</b-nav-item>
+          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="showconfirmation=true">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
 
 
 
   </div>
+
+
+  <!-- Sliding List Modal -->
+    <b-modal
+      id="logout-confirmation"
+      size="lg"
+      hide-footer
+      hide-header
+      v-model="showconfirmation"
+      @hidden="showconfirmation = false"
+      centered
+
+    >
+     <template #modal-title>
+        Logout Confirmation
+      </template>
+
+      <logoutconfirmation @logout="logout" @close="showconfirmation=false" />
+      
+      
+    </b-modal>
+
+
+
+
+
+
+
 </template>
 
 <script>
 import { BAvatar, BDropdown, BDropdownItem } from 'bootstrap-vue-3';
-import { auth } from '@/firebase/Config';
 import { signOut } from 'firebase/auth';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+
+import {auth, firestore, storage } from '@/firebase/Config';
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
+import logoutconfirmation from '@/components/layout/logoutconfirmation.vue';
+
+
 
 export default {
   props:['username','profileimagelink'],
@@ -63,8 +98,22 @@ export default {
     BAvatar,
     BDropdown,
     BDropdownItem,
+    logoutconfirmation
   },methods:{
     async logout(){
+
+
+      
+       const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+        await updateDoc(UserDocRef, {
+            status: false
+        });
+
+
+
+
+
       await signOut(auth);
 
 
@@ -77,13 +126,38 @@ export default {
             position: "right", // `left`, `center` or `right`
             backgroundColor: "red",
           }).showToast();
+    },
+    async fetch(){
+
+      const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+
+      const o = await onSnapshot(userDocRef,(doc)=>{
+         const temp = {...doc.data()};
+          this.numberofinvitations = temp.invitations.length;
+
+
+      })
+      
+      this.purge.push(o)
+     
     }
+  },
+   created(){
+    this.fetch()
   },
    data(){
     return ({
-      numberofinvitations:0
+      numberofinvitations:0,
+      purge:[],
+      showconfirmation:false
+
     })
-  }
+  },
+  async beforeUnmount(){
+   
+    this.purge.forEach(func => func());
+
+  },
 };
 </script>
 

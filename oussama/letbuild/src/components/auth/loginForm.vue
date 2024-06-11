@@ -23,9 +23,13 @@
 <script>
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import { auth } from '@/firebase/Config';
+import { auth ,firestore} from '@/firebase/Config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import loadingPage from '@/components/layout/loadingPage.vue';
+
+import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
+import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion, Timestamp,addDoc,deleteDoc} from 'firebase/firestore';
+import { ref, uploadBytes,listAll ,getDownloadURL ,deleteObject} from 'firebase/storage';
 
 
 
@@ -47,7 +51,24 @@ export default {
         this.progr = 30;
         await signInWithEmailAndPassword(auth, this.email, this.password);
 
+        const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+                  
+
+
+
+        await updateDoc(UserDocRef, {
+            status: true
+        });
+
+
+
+
+
         this.progr = 100;
+
+
+
 
         
         this.$router.push('/');

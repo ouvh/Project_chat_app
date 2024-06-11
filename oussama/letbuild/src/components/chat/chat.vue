@@ -4,14 +4,23 @@
     
     <div class="top">
       <div class="user">
-        <img v-if="chatdata.type==='discussion'" :src="chatdata.friend.profileImageUrl" alt="">
+        <div class="profile-container">
+           <img v-if="chatdata.type==='discussion'" :src="chatdata.friend.profileImageUrl" alt="">
         <img v-if="chatdata.type==='group'" :src="chatdata.groupicon" alt="">
+        <div v-if="chatdata.type==='discussion'"  :class="{'online-indicator':friendstatus,'offline-indicator':!friendstatus}"></div> <!-- Online status indicator -->
+        
+      </div>
+       
 
         <div class="texts">
           <span v-if="chatdata.type==='discussion'">{{chatdata.friend.username}}</span>
           <span  v-if="chatdata.type==='group'" >{{chatdata.groupname}}</span>
+          <p v-if="chatdata.type==='discussion' && friendstatus">Online</p>
+          <p v-if="chatdata.type==='discussion' && !friendstatus">Offline</p>
+
 
         </div>
+
       </div>
       <div class="icons">
         <img @click="showDetail = true" src="../../../public/assets/info.png" alt="info">
@@ -143,7 +152,6 @@
     </b-modal>
 
 
-
 </template>
 
 <script>
@@ -153,6 +161,7 @@ import FilePreview from '../layout/filesPreview.vue';
 import loadingPage from '@/components/layout/loadingPage.vue';
 import { v4 as uuidv4 } from 'uuid';
 import { formatDistanceToNow } from 'date-fns';
+import { useSound } from '@vueuse/sound';
 
 
 
@@ -160,9 +169,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 import { auth, firestore, storage } from '@/firebase/Config';
 import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
-import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
+import { runTransaction,doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
-
 
 
 import Toastify from 'toastify-js';
@@ -174,6 +182,9 @@ export default {
   props:['chatid'],
   data() {
     return {
+      purgehere:null,
+      friendstatus:false,
+      friendlistener:null,
       chatdata:{id:null},
       listener:null,
       messages:[],
@@ -185,16 +196,24 @@ export default {
       maxFileSize: 10 * 1024 * 1024,
       loading:false,
       progr:0,
+      sound:useSound(require('../../assets/sound.mp3'),{ volume: 0.05 })
 
 
     };
-  },async beforeUnmount(){
+  },
+  async beforeUnmount(){
     if(this.listener !== null){
         await this.listener()
+      }
+    if(this.friendlistener !== null){
+        await this.friendlistener()
       }
 
   },
   mounted() {
+
+    
+    
     const targetElement = this.$refs.targetscroll;
 
       // Check if the element exists
@@ -224,7 +243,6 @@ export default {
       }
       else
       {for (let i = 0; i < files.length; i++) {
-        console.log(files[i])
 
         const file = files[i];
 
@@ -265,14 +283,16 @@ export default {
         backgroundColor: "red",
       }).showToast();
     },
+    ppppppplla(){
+      this.sound.play()
+    },
     async send(){
 
+     
+      /*
       if(this.text.trim()==='' && this.selectedFiles.length === 0){
         return
       }
-
-
-
 
 
       const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
@@ -337,18 +357,134 @@ export default {
        
           this.scrolllll()
           
+          
 
 
 
-        
-        
+      }*/
+
+
+      
+      if(this.text.trim()==='' && this.selectedFiles.length === 0){
+        return
+      }
+
+      const ID = await this.getnextid()
+
+
+      const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+      const messagesCollectionRef = collection(ChatDocRef, 'message');
+
+      if(this.selectedFiles.length === 0){
+
+            await addDoc(messagesCollectionRef,{
+            author:auth.currentUser.uid,
+            type:'text',
+            senttime:Timestamp.now(),
+            filename:'',
+            content:this.text,
+            unread:true,
+            readby:[],
+            ID:ID
+            });
+
+          this.text = '';
+
+          this.scrolllll()
+          
+          
+      }else{ 
+
+
+
+
+    this.loading = true
+    const promises = this.selectedFiles.map(async (file) => {
+    const type = file.type.split('/')[0];
+    const uniqueName = `${Date.now()}_${uuidv4()}_${file.name}`;
+    const storageRef = ref(storage, `chats/${this.chatdata.id}/${uniqueName}`);
+    await uploadBytes(storageRef, file.file);
+    const profileImageUrl = await getDownloadURL(storageRef);
+    const messageType = type === 'image' ? 'image' : 'file';
+
+    await addDoc(messagesCollectionRef, {
+      author: auth.currentUser.uid,
+      type: messageType,
+      senttime:Timestamp.now(),
+      filename: file.name,
+      content: profileImageUrl,
+      unread: true,
+      messagecontent: this.text,
+      readby:[],
+      ID:ID
+
+
+    });
+    this.progr += parseInt(100/this.selectedFiles.length)
+  });
+
+        // Wait for all promises to resolve
+        await Promise.all(promises);
+          this.text = '';
+        this.loading = false
+        this.progr = 100;
+        this.selectedFiles = [];
+
+
+          if (this.$refs.myInput) {
+              this.$refs.myInput.focus();
+          } 
+       
+          this.scrolllll()
+          
+          
+
+
 
       }
 
 
+      
+      
 
 
 
+
+    },
+    async getNextId() {
+    const counterDocRef = doc(firestore, 'chats', this.chatdata.id);
+
+    try {
+      const newId = await runTransaction(firestore, async (transaction) => {
+      const counterDoc = await transaction.get(counterDocRef);
+
+      if (!counterDoc.exists()) {
+        return null
+      }
+
+      const currentId = counterDoc.data().currentId;
+      const newId = currentId + 1;
+      this.text = newId
+
+      transaction.update(counterDocRef, { currentId: newId });
+
+      return newId;
+    });
+
+    return newId;
+  } catch (e) {
+    return null
+  }
+    },
+    async getnextid(){
+      const counterDocRef = doc(firestore, 'chats', this.chatdata.id);
+       const q =  await getDoc(counterDocRef);
+       updateDoc(counterDocRef,{
+        currentId:q.data().currentId+1
+       })
+
+       return q.data().currentId
+      
     },
     scrolllll(){
       const targetElement = this.$refs.targetscroll;
@@ -368,13 +504,13 @@ export default {
         const sentTime = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
         return formatDistanceToNow(sentTime, { addSuffix: true });// Using dayjs library to format "time ago"
       }
-    ,async updatetime(){
-      /// add read_by 
-    },
+    ,
     async fetchmessages(){
       if(this.listener !== null){
         await this.listener()
       }
+      
+
       this.messages = []
         
         if (this.chatdata.id !== null){
@@ -382,7 +518,7 @@ export default {
                     
                 const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
                 const messagesCollectionRef = collection(ChatDocRef, 'message');
-                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'asc'));
+                const messagesQuery = query(messagesCollectionRef, orderBy('ID', 'asc'));
 
 
                 try{
@@ -404,6 +540,7 @@ export default {
                                             const userDoc = await getDoc(userDocRef);
                                             const temp = {...userDoc.data()};
                                             message.profileImageUrl = temp.profileImageUrl;
+                                            this.ppppppplla()
                                         }
 
                                         if(this.chatdata.type == 'group'){
@@ -459,11 +596,15 @@ export default {
                   await Promise.all(asyncTasks);
 
                   // Append new messages to the existing messages array
-                  console.log([...this.messages])
                   this.messages = [...this.messages, ...newMessages];
 
                   // Sort the messages based on senttime
-                  this.messages = [...this.messages].sort((a, b) => a.senttime.seconds - b.senttime.seconds);
+                  this.messages = [...this.messages].sort((a, b) => a.ID - b.ID);
+                  
+                  if(this.purgehere){
+                                      this.purgehere()
+                  }
+
 
                   // Scroll to the latest message
                   this.$nextTick(() => {
@@ -508,9 +649,21 @@ export default {
 
         try{
 
+          const Check = doc(firestore, "users", auth.currentUser.uid);
+          const tt = await getDoc(Check)
+
+          if(!(tt.data().chats.includes(this.chatid))){
+            this.$router.push('/errorpage')
+            return
+          }
+
+          
+
+
+
 
           const ChatDocRef = doc(firestore, "chats", this.chatid);
-          onSnapshot(ChatDocRef, async (docSnapshot) => {
+          this.purgehere = await onSnapshot(ChatDocRef, async (docSnapshot) => {
 
           if (docSnapshot.exists()) {
             const chatData = docSnapshot.data();
@@ -548,6 +701,10 @@ export default {
               
             chatData.friend = friend;
             this.chatdata = chatData;
+            if(this.friendlistener !== null){
+                await this.friendlistener()
+            }
+            this.assignuserlistener()
             this.listener = this.fetchmessages()
 
             this.loading = false
@@ -576,9 +733,12 @@ export default {
           
           }
         
-
           })
             
+            
+
+
+
 
         }
         catch(error){
@@ -599,13 +759,22 @@ export default {
             
 
 
+    },
+    async assignuserlistener(){
+      const friendDocRef = doc(firestore, "users", this.chatdata.friend.id);
+      this.friendlistener = await onSnapshot(friendDocRef,(doc)=>{
+        const temp = doc.data();
+        this.friendstatus = temp.status
+      })
+
     }
   },
   watch: {
     'chatid': {
       handler: 'fetchchat',
       immediate: true
-    }
+    },
+    
   }
     
   
@@ -614,6 +783,31 @@ export default {
 </script>
 
 <style scoped>
+.profile-container {
+    position: relative;
+    display: inline-block;
+}
+.online-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 80%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: rgb(21, 223, 21);
+    border-radius: 50%; /* To make it a circle */
+}
+.offline-indicator{
+  position: absolute;
+    bottom: 0;
+    left: 80%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: rgb(103, 117, 103);
+    border-radius: 50%; /* To make it a circle */
+
+}
 .oiwnefoiwnef{
   width: 10px;
   height: 10px;

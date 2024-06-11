@@ -85,12 +85,13 @@ export default {
     return {
       user:{username:'error',profileImageUrl:null,chats:[]},
       chats:[],
+      listeners:{},
+      purge:[],
       loading:true,
       showList: false,
       showDetail: false,
       doneloading:true,
       progr:0,
-      chatdata:{type:null,id:null},
     };
   },
   computed: {
@@ -103,6 +104,16 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.handleResize);
+  },
+  async beforeUnmount(){
+    Object.values(this.listeners).forEach(func => {
+  
+      func();
+  
+    });
+
+    this.purge.forEach(func => func());
+
   },
   methods: {
     handleResize() {
@@ -120,7 +131,7 @@ export default {
     async fetch(){
         const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
 
-        onSnapshot(userDocRef, (snapshot) => {
+        const o = await onSnapshot(userDocRef, (snapshot) => {
 
           if (snapshot.exists()) {
           const temp = snapshot.data(); 
@@ -144,19 +155,22 @@ export default {
 
          })
         
-       
+        this.purge.push(o)
     },
     async fetchdata(user){
+
+      
       if (user.chats.length !== 0){
 
           const chatsQuery = query(collection(firestore, 'chats'), where('__name__', 'in', user.chats));
 
-          onSnapshot(chatsQuery, (snapshot) => {
-            this.chats = [];
+          const o = await onSnapshot(chatsQuery, (snapshot) => {
 
 
-            snapshot.forEach(async (DOC) => {
-              
+            snapshot.docChanges().forEach(async (change) => {
+
+                if(change.type === 'added'){
+                const DOC = change.doc
                 const chat = {
                   id: DOC.id,
                   ...DOC.data()
@@ -174,7 +188,7 @@ export default {
                 const messagesCollectionRef = collection(chatDocRef, 'message');
                 const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'));
 
-                onSnapshot(messagesQuery, async (snapshot) => {
+                const p = onSnapshot(messagesQuery, async (snapshot) => {
             
 
                               const querySnapshot = snapshot;
@@ -194,10 +208,23 @@ export default {
                                 unreadmessages = temp.data().count;
 
                                         const userDocRef = doc(firestore, 'users',friendid);
+
+                                        if(!(friendid in this.listeners)){
+
+                                          const lis =  await onSnapshot(userDocRef,(doc)=>{
+                                              this.updatestatus({...doc.data(),id:doc.id});
+                                          })
+
+                                          this.listeners[friendid] = lis;
+
+                                        }
+
                                         const userDoc = await getDoc(userDocRef);
 
+
+
                                             if (userDoc.exists()) {
-                                              friend = userDoc.data();          
+                                              friend = {...userDoc.data(),id:userDoc.id};          
                                             } else {
                                               Toastify({
                                                 text: "Something went Wrong",
@@ -235,7 +262,7 @@ export default {
                                     }
 
 
-                                      this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time,unreadmessages})
+                                      this.updater({...chat,friendusername:friend.username,friendpic:friend.profileImageUrl,content,time,unreadmessages,status:friend.status,friendid:friend.id})
                                         
 
                               }
@@ -286,12 +313,16 @@ export default {
 
 
                 })
+                this.purge.push(p)
+                  }
+
+
 
             });
 
 
            })
-
+          this.purge.push(o)
           this.loading = false;
 
         }
@@ -312,6 +343,16 @@ export default {
       }
       this.chats = [...this.chats].sort((a, b) => b.time.seconds - a.time.seconds);
 
+
+    },
+    updatestatus(data){
+      const index = this.chats.findIndex(obj =>obj.type==='discussion' && obj.friendid === data.id);
+
+      if(index !== -1){
+        this.chats[index].status = data.status;
+
+      }
+      
 
     }
   }

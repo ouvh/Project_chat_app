@@ -40,15 +40,37 @@
         <b-navbar-nav  class="navbar">
           <b-nav-item  class="items"  to="/">Home</b-nav-item>
           <b-nav-item class="items"  to="/profile">Profile</b-nav-item>
-          <b-nav-item class="items"  to="/invitations">invitations</b-nav-item>
+          <b-nav-item class="items"  to="/invitations">Invitations</b-nav-item>
 
-          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="logout">Logout</b-nav-item>
+          <b-nav-item class="logout items" style="width:100%;text-align:center;border-radius:10px" @click.prevent="showconfirmation=true">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
 
 
 
   </div>
+
+  
+    <!-- Sliding List Modal -->
+    <b-modal
+      id="logout-confirmation"
+      size="lg"
+      hide-footer
+      hide-header
+      v-model="showconfirmation"
+      @hidden="showconfirmation = false"
+      centered
+
+    >
+     <template #modal-title>
+        Logout Confirmation
+      </template>
+
+      <logoutconfirmation @logout="logout" @close="showconfirmation=false" />
+      
+      
+    </b-modal>
+
 </template>
 
 <script>
@@ -58,11 +80,11 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 
 
-
 import { auth, firestore, storage } from '@/firebase/Config';
 import { createUserWithEmailAndPassword ,sendPasswordResetEmail } from 'firebase/auth';
 import { doc, updateDoc,setDoc ,collection,query,orderBy,getDocs,getDoc,where,limit,onSnapshot,getCountFromServer,arrayRemove,arrayUnion,serverTimestamp ,Timestamp,addDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL ,deleteObject} from 'firebase/storage';
+import logoutconfirmation from '@/components/layout/logoutconfirmation.vue';
 
 
 
@@ -72,9 +94,28 @@ export default {
     BAvatar,
     BDropdown,
     BDropdownItem,
+    logoutconfirmation
   },methods:{
     async logout(){
+
+       const UserDocRef = doc(firestore, "users", auth.currentUser.uid);
+
+        await updateDoc(UserDocRef, {
+            status: false
+        });
+
+
+
+
+
+
       await signOut(auth);
+
+
+
+
+
+
       this.$router.push('/login')
        Toastify({
             text: "Logout Successfully",
@@ -89,14 +130,15 @@ export default {
 
       const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
 
-      onSnapshot(userDocRef,(doc)=>{
+      const o = await onSnapshot(userDocRef,(doc)=>{
          const temp = {...doc.data()};
           this.numberofinvitations = temp.invitations.length;
 
 
       })
       
-     
+      this.purge.push(o)
+
     }
   },
   created(){
@@ -104,13 +146,23 @@ export default {
   },
   data(){
     return ({
-      numberofinvitations:0
+      numberofinvitations:0,
+      purge:[],
+      showconfirmation:false
     })
-  }
+  },
+  async beforeUnmount(){
+   
+    this.purge.forEach(func => func());
+
+  },
 };
 </script>
 
 <style scoped>
+
+
+
 .avatar-container {
   position: relative;
   display: inline-block;
