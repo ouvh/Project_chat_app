@@ -186,7 +186,7 @@ export default {
                 }
                 const chatDocRef = doc(firestore, 'chats', chat.id);
                 const messagesCollectionRef = collection(chatDocRef, 'message');
-                const messagesQuery = query(messagesCollectionRef, orderBy('senttime', 'desc'));
+                const messagesQuery = query(messagesCollectionRef, orderBy('ID', 'desc'));
 
                 const p = onSnapshot(messagesQuery, async (snapshot) => {
             

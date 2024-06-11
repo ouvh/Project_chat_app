@@ -182,6 +182,7 @@ export default {
   props:['chatid'],
   data() {
     return {
+      first:true,
       purgehere:null,
       friendstatus:false,
       friendlistener:null,
@@ -284,7 +285,9 @@ export default {
       }).showToast();
     },
     ppppppplla(){
-      this.sound.play()
+      if(!this.first){
+        this.sound.play()
+      }
     },
     async send(){
 
@@ -503,8 +506,7 @@ export default {
     formatTimeAgo(timestamp) {
         const sentTime = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
         return formatDistanceToNow(sentTime, { addSuffix: true });// Using dayjs library to format "time ago"
-      }
-    ,
+    },
     async fetchmessages(){
       if(this.listener !== null){
         await this.listener()
@@ -526,21 +528,25 @@ export default {
                 this.listener = await onSnapshot(messagesQuery, async (snapshot) => {
                         
                         const newMessages = [];
+                       
+
+
 
                           // Collect all asynchronous tasks
                           const asyncTasks = snapshot.docChanges().map(async change => {
 
                               if (change.type === "added") {
+                                 
 
                                   const message = change.doc.data();
                                   message.id = change.doc.id;
                                 if(message.senttime !== null){
                                         if (message.author !== auth.currentUser.uid) {
+                                          this.ppppppplla()
                                             const userDocRef = doc(firestore, 'users', message.author);
                                             const userDoc = await getDoc(userDocRef);
                                             const temp = {...userDoc.data()};
                                             message.profileImageUrl = temp.profileImageUrl;
-                                            this.ppppppplla()
                                         }
 
                                         if(this.chatdata.type == 'group'){
@@ -600,6 +606,8 @@ export default {
 
                   // Sort the messages based on senttime
                   this.messages = [...this.messages].sort((a, b) => a.ID - b.ID);
+                  this.first = false
+
                   
                   if(this.purgehere){
                                       this.purgehere()
@@ -644,6 +652,8 @@ export default {
     },
     async fetchchat(){
       this.loading = true
+      this.first = true
+
 
       if(this.chatid){
 
