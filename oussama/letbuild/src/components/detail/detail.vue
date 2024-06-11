@@ -1,5 +1,6 @@
 <template>
     <div v-if="chatdata !== null && chatdata.id !== null" class="detail">
+
         <div class="user" style="overflow:hidden">
 
              <img v-if="chatdata.type==='discussion'" :src="chatdata.friend.profileImageUrl" alt="">
@@ -79,8 +80,145 @@
                                 </b-collapse>
             </div>
 
+             <div v-if="this.chatdata.admin === uuusers">
+                
+                                <b-row class="row" >
+                                    <b-col lg="10" cols="9">
+                
+                                        <h5>Add Member</h5>
+                                    </b-col>
+                
+                                    <b-col lg="2" cols="3"  >
+                                        <b-navbar toggleable="0%" type="white" style="">
+                                            <b-navbar-toggle target="detail-files">
+                                                <template #default="{ expanded }">
+                                                    <i v-if="expanded"  class="bi bi-chevron-bar-up" style="color:black; font-size: 1.8rem;"></i>
+                                                    <i v-if="!expanded" class="bi bi-chevron-bar-down" style="color:black; font-size: 1.8rem;"></i>
+                                                </template>
+                                            </b-navbar-toggle>
+                                        </b-navbar>
+                                    </b-col>
+                
+                                </b-row>
+                
+                
+                                <b-collapse id="detail-files" is-nav class="items ">
+
+                                    
+                  
+
+
+
+                    <div class="input-group mb-3">
+                    <b-form-tags
+                    ref="ooo"
+                        input-id="tags-remove-on-delete"
+                        :input-attrs="{ 'aria-describedby': 'tags-remove-on-delete-help' }"
+                        v-model="groupMember"
+                        :tag-validator="Validate"
+                        separator=" "
+                        placeholder="Enter new username separated by space"
+                        remove-on-delete
+                        no-add-on-enter
+                        class="search-input "
+                        @keyup="handleTagState"
+                    ></b-form-tags>
+                    </div>
+                    <b-form-text id="tags-remove-on-delete-help" class="mx-auto">
+                    Press <kbd>Backspace</kbd> to remove the last username entered
+                    </b-form-text>
+
+                     <div :key="index" v-for="friend,index in filteredfriends" class="item">
+
+
+
+                          <img :src="friend.profileImageUrl" alt="">
+                          <div class="texts" style="overflow:hidden">
+                              <span style="  white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">{{friend.username}}</span>
+                          </div>
+
+
+                  <div style="flex:1;display:flex;justify-content:end;align-items:space-between;gap:50px">
+                    
+                              <b-button @click="groupMember.push(friend.username);handleTagState({target:{value:''}});searchtag='';" variant="success"  >
+                                
+                                  <i class="bi bi-plus" style="border-radius:;color:white; font-size: 2rem;"></i>
+
+                              </b-button>
+      
+
+                  </div>
+
+
+                      </div>
+                       <b-button @click="invite"  variant="success"  style="width:100%">
+                                  <h2>Invite +</h2>
+                    </b-button>
+ 
+
+
+
+
+                                    
+                                  
+                                    
+                                </b-collapse>
+            </div>
+
       
                     
+            <div v-if="this.chatdata.type === 'group'" >
+                
+                                <b-row class="row" >
+                                    <b-col lg="10" cols="9">
+                
+                                        <h5>Members</h5>
+                                    </b-col>
+                
+                                    <b-col lg="2" cols="3"  >
+                                        <b-navbar toggleable="0%" type="white" style="">
+                                            <b-navbar-toggle target="detail-photo">
+                                                <template #default="{ expanded }">
+                                                    <i v-if="expanded"  class="bi bi-chevron-bar-up" style="color:black; font-size: 1.8rem;"></i>
+                                                    <i v-if="!expanded" class="bi bi-chevron-bar-down" style="color:black; font-size: 1.8rem;"></i>
+                                                </template>
+                                            </b-navbar-toggle>
+                                        </b-navbar>
+                                    </b-col>
+                
+                                </b-row>
+                
+                
+                                <b-collapse id="detail-photo" is-nav class="items">
+                                    <div class="photos">
+
+
+                    <div :key="index" v-for="image,index in this.members" class="photoitem">
+
+                        <div class="photodetail">
+                            <img :src="image.profileImageUrl" alt="">
+                            <span>{{image.username}}</span>
+
+                        </div>
+                        <b-button v-if="image.id !== uuusers && this.chatdata.admin === uuusers" @click="removeuser(image.id)" variant="danger">-</b-button>
+
+                        
+
+                    </div>
+                    
+                   
+
+
+
+
+
+                                    </div>
+                                    
+                                </b-collapse>
+            </div>
+
+
+                      
             <div>
                 
                                 <b-row class="row" >
@@ -174,6 +312,11 @@
                                 </b-collapse>
             </div>
 
+
+            
+
+
+
             <button v-if="this.chatdata.type !== 'group'" @click="removefriend" class="block-button">Remove User</button>
             <button v-if="this.chatdata.type === 'group'" @click="quitGroup" class="block-button">Quit Group</button>
 
@@ -182,6 +325,8 @@
 
 
         </div>
+
+
     </div>
 
         <loadingPage v-if="loading" :progress="progr"/>
@@ -205,21 +350,149 @@ export default {
     components:{loadingPage},
     data(){
         return ({
+            all:[],
+            purge:[],
+
+            user:{},
+            filteredfriends:[],
             chatdata:{id:null},
             messages:[],
             loading:false,
-            progr:0
+            groupMember:[],
+            progr:0,
+            members:[],
+            uuusers:auth.currentUser.uid
         })
     },
     methods:{
-        fetch(){
+        async fetch(){
             if(this.data){
                     if(this.data.id !== null){
                 this.chatdata = {...this.data}
                 this.messages = this.mess
+                this.fetchusers()
+                const usersDocRef =  collection(firestore, 'users');
+                const querySnapshot = await getDocs(usersDocRef);
+                this.all = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+
+                
+
+
+          const ChatDocRef = doc(firestore, "chats", this.data.id);
+
+          const purgehere = await onSnapshot(ChatDocRef, async (docSnapshot) => {
+
+          if (docSnapshot.exists()) {
+            const chatData = docSnapshot.data();
+            chatData.id = docSnapshot.id;
+
+
+          if (chatData.type === 'discussion'){
+                  
+              let friend;
+              let friendid;
+              if (chatData.senders[0] === auth.currentUser.uid){
+                  friendid = chatData.senders[1];
+              }
+              else{
+                  friendid = chatData.senders[0];
+              }
+
+
+              const userDocRef = doc(firestore, 'users',friendid);
+              const userDoc = await getDoc(userDocRef);
+
+              if (userDoc.exists()) {
+                friend = {...userDoc.data(),id:userDoc.id};         
+              } else {
+                Toastify({
+                  text: "Something went Wrong 2 ",
+                  duration: 3000,
+                  close: true,
+                  gravity: "bottom", // `top` or `bottom`
+                  position: "right", // `left`, `center` or `right`
+                  backgroundColor: "red",
+                }).showToast();
+            
+              }
+              
+            chatData.friend = friend;
+            this.chatdata = chatData;
+
+
+
+
+                            
+
+
+
+          }else{
+            this.chatdata = chatData;
+            this.fetchusers()
+
+          }
+
+
+
+
+
+
+          }else{
+        
+          this.$router.push('/')
+          
+          
+          }
+        
+          })
+            
+            
+
+
+
+
+
+
+
+
+
+
+                const o = await onSnapshot(userDocRef, (snapshot) => {
+
+          if (snapshot.exists()) {
+          const temp = snapshot.data(); 
+          this.user = {...temp,id:auth.currentUser.uid}
+           this.filteredfriends = this.all.filter(usert =>this.user.friends.includes(usert.id) && !this.chatdata.senders.includes(usert.id) )
+
+        } else {
+           Toastify({
+            text: "Something went Wrong",
+            duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            backgroundColor: "red",
+          }).showToast();
+          
+        }
+
+
+         })
+        
+                this.purge.push(o)
+                this.purge.push(purgehere)
+
                 }
             }
+
         },
+        async beforeUnmount(){
+    
+
+    this.purge.forEach(func => func());
+
+  },
         async removefriend(){
             try{
                     this.loading = true
@@ -325,7 +598,8 @@ export default {
         ,downloadFile(url) {
        window.open(url, '_blank');
       
-    },async quitGroup(){
+    },
+    async quitGroup(){
           try{
 
                     if(this.chatdata.senders.length ===1){
@@ -421,6 +695,18 @@ export default {
                     const i = temp.data().username
 
 
+
+                    const counterDocRef = doc(firestore, 'chats', this.chatdata.id);
+                    const q =  await getDoc(counterDocRef);
+                    updateDoc(counterDocRef,{
+                        currentId:q.data().currentId+1
+                    })
+
+                    
+
+
+
+
                     await addDoc(mmessagesCollectionRef,{
                     author:auth.currentUser.uid,
                     type:'text',
@@ -428,7 +714,8 @@ export default {
                     filename:'',
                     content:`${i} has left the Group`,
                     unread:true,
-                    readby:[]
+                    readby:[],
+                    ID: q.data().currentId
                     });
 
 
@@ -457,6 +744,181 @@ export default {
 
 
                     }
+
+
+                  
+
+
+
+
+
+
+
+
+            }catch(error){
+                Toastify({
+              text: "Something went Wrong",
+              duration: 3000,
+              close: true,
+              gravity: "bottom", // `top` or `bottom`
+              position: "right", // `left`, `center` or `right`
+              backgroundColor: "red",
+            }).showToast();
+
+            }
+
+
+    },
+    async fetchusers(){
+        const mem = [];
+        const asyncTasks = this.chatdata.senders.map(async (memberid)=>{
+
+            const userDocRef = doc(firestore, 'users', memberid);
+            const temp = await getDoc(userDocRef);
+            mem.push({...temp.data(),id:temp.id})
+        })
+
+
+        await Promise.all(asyncTasks);
+        this.members = mem
+
+
+    },
+    Validate(tag){
+      const tem = this.all.filter(user=>user.username === tag);
+      return (tem.length===1 && this.user.friends.includes(tem[0].id) && ![...this.groupMember].includes(tem[0].username) && (!this.chatdata.senders.includes(tem[0].id)))
+
+    }, 
+    handleTagState(event) {
+
+      const temp = event.target.value
+      this.searchtag = temp;
+     
+      if (!temp) {
+        console.log([...this.groupMember])
+        this.filteredfriends = this.all.filter((usert) =>{
+   
+          return (this.user.friends.includes(usert.id) && ![...this.groupMember].includes(usert.username)&& !this.chatdata.senders.includes(usert.id))
+          
+          
+          })
+      }
+      else{
+         this.filteredfriends = this.all.filter((user) => {
+          const username = user.username.toLowerCase();
+          return username.includes(temp.toLowerCase()) && this.user.friends.includes(user.id) &&  ![...this.groupMember].includes(user.username) && !this.chatdata.senders.includes(user.id) ;  
+      });
+
+      }
+
+    
+      
+    },
+    async invite(){
+        const members = this.all.filter(user=>[...this.groupMember].includes(user.username));
+
+        const work = members.map(async (member)=>{
+          
+            const memberDocRef = doc(firestore, "users", member.id);
+            const ChatDocRef = doc(firestore, "chats",this.chatdata.id);
+
+            await updateDoc(memberDocRef, {
+                invitations: arrayUnion({id:this.chatdata.id,type:'group'})
+              });
+
+            await updateDoc(ChatDocRef, {
+              sentinvitations: arrayUnion(member.id)
+            });
+
+
+
+        })
+        
+
+        await Promise.all(work);
+
+
+        Toastify({
+            text: "invitations Sent",
+            duration: 3000,
+            close: true,
+            gravity: "bottom", // `top` or `bottom`
+            position: "right", // `left`, `center` or `right`
+            backgroundColor: "green",
+          }).showToast();
+        
+        window.location.reload();
+
+    },
+    async removeuser(idd){
+        try{
+
+                    
+                    this.loading = true
+                    this.progr = 5
+                    const cChatDocRef = doc(firestore, "chats", this.chatdata.id);
+                    const mmessagesCollectionRef = collection(cChatDocRef, 'message');
+                    const UserDocRef = doc(firestore, "users", idd);
+                    const ChatDocRef = doc(firestore, "chats", this.chatdata.id);
+
+
+                    const temp = await getDoc(UserDocRef);
+                    const i = temp.data().username
+
+
+
+                    const counterDocRef = doc(firestore, 'chats', this.chatdata.id);
+                    const q =  await getDoc(counterDocRef);
+                    updateDoc(counterDocRef,{
+                        currentId:q.data().currentId+1
+                    })
+
+                    
+
+
+
+
+                    await addDoc(mmessagesCollectionRef,{
+                    author:auth.currentUser.uid,
+                    type:'text',
+                    senttime:Timestamp.now(),
+                    filename:'',
+                    content:`${i} has been removed from this group`,
+                    unread:true,
+                    readby:[],
+                    ID: q.data().currentId
+                    });
+
+
+
+                    
+                    await updateDoc(ChatDocRef, {
+                        senders: arrayRemove(idd)
+                    });
+
+                    await updateDoc(UserDocRef, {
+                        chats: arrayRemove(this.chatdata.id)
+                    });
+                     this.progr = 90;
+                     this.loading = false
+
+
+
+                    Toastify({
+                    text: "user Removed from your group",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "orange",
+                    }).showToast();
+                    
+                    window.location.reload();
+
+
+
+
+                    
 
 
                   
@@ -520,6 +982,28 @@ export default {
 </script>
 
 <style scoped>
+.item{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    border-bottom: 1px solid #dddddd35;
+
+}
+
+.item img{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+
+}
+
+.texts{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 .detail{
       width: 100%;
 

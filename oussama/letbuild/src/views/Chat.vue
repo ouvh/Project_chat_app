@@ -132,12 +132,16 @@ export default {
         const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
 
         const o = await onSnapshot(userDocRef, (snapshot) => {
+          
 
           if (snapshot.exists()) {
           const temp = snapshot.data(); 
           this.user.username = temp.username;
           this.user.profileImageUrl = temp.profileImageUrl;
           this.user.chats = temp.chats;
+          if(!temp.chats.includes(this.chatid)){
+            this.$router.push('/')
+          }
           this.fetchdata(temp)
 
         } else {
@@ -162,12 +166,17 @@ export default {
       
       if (user.chats.length !== 0){
 
+
           const chatsQuery = query(collection(firestore, 'chats'), where('__name__', 'in', user.chats));
 
           const o = await onSnapshot(chatsQuery, (snapshot) => {
 
 
             snapshot.docChanges().forEach(async (change) => {
+
+                if(!change.doc.data().senders.includes(auth.currentUser.uid)){
+                  window.location.reload();
+                }
 
                 if(change.type === 'added'){
                 const DOC = change.doc
@@ -319,6 +328,7 @@ export default {
 
 
             });
+
 
 
            })

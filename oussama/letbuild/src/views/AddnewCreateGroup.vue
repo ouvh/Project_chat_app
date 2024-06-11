@@ -203,10 +203,12 @@
 
 
                       </div>
-
-                      
-               
  
+
+
+
+
+
                     </div>
 
                     
@@ -439,7 +441,7 @@ export default {
 
         const members = this.all.filter(user=>[...this.groupMember].includes(user.username));
 
-        const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[auth.currentUser.uid],type:'group',createdat:Timestamp.now(),groupname:this.groupname,sentinvitations:[],groupicon:'',currentId:0});
+        const chatDocRef = await addDoc(collection(firestore, "chats"),{senders:[auth.currentUser.uid],type:'group',createdat:Timestamp.now(),groupname:this.groupname,sentinvitations:[],groupicon:'',currentId:0,admin:auth.currentUser.uid});
 
         this.progr = 50
 
@@ -489,6 +491,7 @@ export default {
         
 
         members.forEach(async (member)=>{
+          
             const memberDocRef = doc(firestore, "users", member.id);
             const ChatDocRef = doc(firestore, "chats",chatDocRef.id);
 
@@ -578,7 +581,8 @@ export default {
       const tem = this.all.filter(user=>user.username === tag);
       return (tem.length===1 && this.user.friends.includes(tem[0].id) && ![...this.groupMember].includes(tem[0].username))
 
-    }, async  fileToBlob(filePath){
+    }, 
+    async  fileToBlob(filePath){
   const response = await fetch(filePath);
   const blob = await response.blob();
   return blob;
