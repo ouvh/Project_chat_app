@@ -114,9 +114,9 @@
           <i @click="toggleEmojiPicker" class="bi bi-emoji-smile-fill" style="cursor:pointer;margin-right:10px;font-size: 1.8rem;"></i>
       </div>
 
-        <b-button  variant="success" @click="send" >
+        <b-button class="efoiwnefoiwefoiwnef"  @click="send" >
                         <div style="display:flex;gap:20px;font-weight:bolder">
-                            <div style="display:flex;align-items:center;">Send</div>
+
                         <img src="../../assets/send.png" alt="Profile Picture" class="profile-picturee ppppojpppo"/>
 
                         </div>
@@ -705,7 +705,9 @@ export default {
                 await this.friendlistener()
             }
             this.assignuserlistener()
+            
             this.listener = this.fetchmessages()
+            this.progr = 60
 
             this.loading = false
 
@@ -718,6 +720,8 @@ export default {
           }else{
             this.chatdata = chatData;
             this.listener = this.fetchmessages()
+            this.progr = 60
+
             this.loading = false
           }
 
@@ -783,6 +787,15 @@ export default {
 </script>
 
 <style scoped>
+.efoiwnefoiwefoiwnef{
+  background-color: red;
+  background-color:transparent;border-color:transparent
+
+}
+.efoiwnefoiwefoiwnef:hover{
+  background-color: rgb(24, 212, 125);
+
+}
 .profile-container {
     position: relative;
     display: inline-block;

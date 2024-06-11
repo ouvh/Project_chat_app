@@ -18,8 +18,8 @@
         </b-navbar>
         </div>
           
-        <div class="avatar-container">
-          <b-avatar :src="profileimagelink" size="md"></b-avatar>
+        <div  class="avatar-container">
+          <b-avatar  :src="profileimagelink" size="md"></b-avatar>
           <span v-if="numberofinvitations !== 0" class="number-indicator" @click="this.$router.push('/invitations')">{{numberofinvitations}}</span>
         </div>
         <h5  class="m-0 user-name">{{username}}</h5>
